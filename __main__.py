@@ -1,7 +1,10 @@
+import math
 import sys
 import time
 from abc import ABC
+from math import cos, sin
 from typing import BinaryIO, AnyStr
+
 from serial import Serial, SerialException
 import os
 
@@ -62,6 +65,11 @@ def clamp(x, lower_lim, upper_lim):
 	return x
 
 
+def remap(x: float, in_min: float, in_max: float, out_min: float, out_max: float) -> float:
+	""" Linear remap of value x from range in to range out. """
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
+
 class RobotController:
 	def __init__(self, serial: Serial = None):
 		pygame.init()
@@ -96,23 +104,34 @@ class RobotController:
 				time.sleep(move)
 
 	@staticmethod
-	def draw_pwms(text_print: TextPrint, screen: {}, pwms: [(str, int)]):
-		""" Draw various debug information."""
-		text_print.print(screen, "PWM's:")
-		text_print.indent()
-		for address, val in pwms:
-			text_print.print(screen, f"{address}: {val}")
-		text_print.unindent()
+	def draw_servo(screen: {}, pos: (int, int), pwm: int, name="Servo"):
+		""" Draw a servo."""
+		pygame.draw.rect(screen, "black", pygame.Rect(pos, (180, 64)), border_radius=6)
+		radians = remap(pwm, 0, 255, -math.pi / 2 + math.pi / 2, math.pi / 2 + math.pi / 2)
+		center = pos[0] + 32, pos[1] + 32
+		x, y = int(40*cos(radians)), int(40*sin(radians))
+		start = center[0] + x, center[1] + y
+		end = center[0] - x, center[1] - y
+		pygame.draw.aaline(screen, "gray", start, end)
+
+		pygame.draw.circle(screen, "gray", center, 8)
+		pygame.draw.circle(screen, "gray", end, 3)
+		pygame.draw.circle(screen, "gray", start, 3)
+
+		text_bitmap = pygame.font.Font(None, 40).render(f"{name}: {int(pwm)}", True, "white")
+		screen.blit(text_bitmap, [pos[0] + 100, pos[1] + 16])
 
 	def draw(self):
 		""" All drawing for the GUI. """
 		self.screen.fill("gray14")
 		self.textPrint.reset()
 
+		for i, (address, pwm) in enumerate(robot.items()):
+			self.draw_servo(self.screen, (32 + 196*i, 32), name=address, pwm=pwm)
+
 		if self.joystick:
 			draw_joystick(self.textPrint, self.screen, self.joystick)
 
-		self.draw_pwms(self.textPrint, self.screen, robot.items())
 		pygame.display.flip()
 		self.clock.tick(TARGET_FPS)
 

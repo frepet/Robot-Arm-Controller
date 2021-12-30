@@ -4,7 +4,7 @@ import pygame
 class TextPrint:
     def __init__(self):
         self.x = 10
-        self.y = 10
+        self.y = 128
         self.line_height = 30
         self.reset()
         self.font = pygame.font.Font(None, 40)
@@ -16,7 +16,7 @@ class TextPrint:
 
     def reset(self):
         self.x = 10
-        self.y = 10
+        self.y = 128
         self.line_height = 30
 
     def indent(self):
