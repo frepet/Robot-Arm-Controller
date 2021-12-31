@@ -1,8 +1,6 @@
-import math
 import sys
 import time
 from abc import ABC
-from math import cos, sin
 from typing import BinaryIO, AnyStr
 
 from serial import Serial, SerialException
@@ -11,49 +9,12 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import pygame
+import pygame.gfxdraw
 
 from text_print import TextPrint
 
 # Load config file
 from config import *
-
-
-def draw_joystick(text_print, screen, joystick):
-	""" Print information about connected joysticks. """
-	joystick_count = pygame.joystick.get_count()
-	text_print.print(screen, "Number of joysticks: {}".format(joystick_count))
-
-	text_print.print(screen, "Joystick {}".format(1))
-	text_print.indent()
-
-	name = joystick.get_name()
-	text_print.print(screen, "Joystick name: {}".format(name))
-
-	axes = joystick.get_numaxes()
-	text_print.print(screen, "Number of axes: {}".format(axes))
-	text_print.indent()
-	for j in range(axes):
-		axis = joystick.get_axis(j)
-		text_print.print(screen, "Axis {} value: {:>6.3f}".format(j, axis))
-	text_print.unindent()
-
-	buttons = joystick.get_numbuttons()
-	text_print.print(screen, "Number of buttons: {}".format(buttons))
-	text_print.indent()
-	for j in range(buttons):
-		button = joystick.get_button(j)
-		text_print.print(screen, "Button {:>2} value: {}".format(j, button))
-	text_print.unindent()
-
-	hats = joystick.get_numhats()
-	text_print.print(screen, "Number of hats: {}".format(hats))
-	text_print.indent()
-	for j in range(hats):
-		hat = joystick.get_hat(j)
-		text_print.print(screen, "Hat {} value: {}".format(j, str(hat)))
-	text_print.unindent()
-
-	text_print.unindent()
 
 
 def clamp(x, lower_lim, upper_lim):
@@ -70,6 +31,45 @@ def remap(x: float, in_min: float, in_max: float, out_min: float, out_max: float
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
 
+def draw_polygon(surface, points, color):
+	pygame.gfxdraw.aapolygon(surface, points, color)
+	pygame.gfxdraw.filled_polygon(surface, points, color)
+
+
+def draw_circle(surface, center, radius, color):
+	pygame.gfxdraw.circle(surface, *(int(x) for x in center), radius, color)
+	pygame.gfxdraw.filled_circle(surface, *(int(x) for x in center), radius, color)
+
+
+def draw_joystick(screen, joystick):
+	""" Print information about connected joysticks. """
+	text_print = TextPrint((10, 500))
+
+	text_print.print(screen, f"{joystick.get_name()}:")
+	text_print.indent()
+
+	text_print.print(screen, "Axes:")
+	text_print.indent()
+	for j in range(joystick.get_numaxes()):
+		text_print.print(screen, f"{j}: {joystick.get_axis(j):>6.3f}")
+	text_print.unindent()
+
+	text_print.print(screen, "Buttons:")
+	text_print.indent()
+	for j in range(joystick.get_numbuttons()):
+		text_print.print(screen, f"{j:>2}: {joystick.get_button(j)}")
+	text_print.unindent()
+
+	text_print.print(screen, "Hats:")
+	text_print.indent()
+	for j in range(joystick.get_numhats()):
+		text_print.print(screen, f"{j}: {joystick.get_hat(j)}")
+	text_print.unindent()
+
+	text_print.unindent()
+
+
+
 class RobotController:
 	def __init__(self, serial: Serial = None):
 		pygame.init()
@@ -83,7 +83,6 @@ class RobotController:
 		else:
 			self.joystick = None
 
-		self.textPrint = TextPrint()
 		self.serial = serial
 
 	def set_servo(self, address, value):
@@ -102,35 +101,53 @@ class RobotController:
 				self.set_servo(move[0], move[1])
 			else:
 				time.sleep(move)
-
+	
 	@staticmethod
 	def draw_servo(screen: {}, pos: (int, int), pwm: int, name="Servo"):
 		""" Draw a servo."""
+		horn_color = (200, 200, 200)
+		hole_color = (0xff, 0x45, 0)
+		center_color = (255, 255, 255)
+
+		# Calculate servo horn polygon
+		length = 40
+		width = 5
+		points = [(width,  -length),
+		          (width,   length),
+		          (-width,  length),
+		          (-width, -length),
+				  (0, -length),
+				  (0, length)]
+
+		center = pygame.Vector2(pos[0] + 32, pos[1] + 32)
+		points = [pygame.Vector2(p).rotate(remap(pwm, 0, 255, -90, 90)) + center for p in points]
+
+		# Servo body
 		pygame.draw.rect(screen, "black", pygame.Rect(pos, (180, 64)), border_radius=6)
-		radians = remap(pwm, 0, 255, -math.pi / 2 + math.pi / 2, math.pi / 2 + math.pi / 2)
-		center = pos[0] + 32, pos[1] + 32
-		x, y = int(40*cos(radians)), int(40*sin(radians))
-		start = center[0] + x, center[1] + y
-		end = center[0] - x, center[1] - y
-		pygame.draw.aaline(screen, "gray", start, end)
 
-		pygame.draw.circle(screen, "gray", center, 8)
-		pygame.draw.circle(screen, "gray", end, 3)
-		pygame.draw.circle(screen, "gray", start, 3)
+		# Servo horn
+		draw_polygon(screen, points[0:4], horn_color)
+		draw_circle(screen, points[4], width, horn_color)
+		draw_circle(screen, points[5], width, horn_color)
 
-		text_bitmap = pygame.font.Font(None, 40).render(f"{name}: {int(pwm)}", True, "white")
-		screen.blit(text_bitmap, [pos[0] + 100, pos[1] + 16])
+		# End and center indicators
+		draw_circle(screen, points[4], 3, hole_color)
+		draw_circle(screen, points[5], 3, hole_color)
+		draw_circle(screen, center, 3, center_color)
+
+		# Servo pwm value as text
+		text_bitmap = pygame.font.Font(None, 30).render(f"{name}: {int(pwm)}", True, "white")
+		screen.blit(text_bitmap, [pos[0] + 95, pos[1] + 20])
 
 	def draw(self):
 		""" All drawing for the GUI. """
 		self.screen.fill("gray14")
-		self.textPrint.reset()
 
 		for i, (address, pwm) in enumerate(robot.items()):
 			self.draw_servo(self.screen, (32 + 196*i, 32), name=address, pwm=pwm)
 
 		if self.joystick:
-			draw_joystick(self.textPrint, self.screen, self.joystick)
+			draw_joystick(self.screen, self.joystick)
 
 		pygame.display.flip()
 		self.clock.tick(TARGET_FPS)

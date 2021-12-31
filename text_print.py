@@ -2,25 +2,23 @@ import pygame
 
 
 class TextPrint:
-    def __init__(self):
-        self.x = 10
-        self.y = 128
-        self.line_height = 30
+    def __init__(self, pos):
+        self.pos = pygame.Vector2(pos)
+        self.cursor = self.pos
+        self.line_height = 20
         self.reset()
-        self.font = pygame.font.Font(None, 40)
+        self.font = pygame.font.Font(None, int(self.line_height*1.1))
 
     def print(self, screen, text_string, color="white"):
         text_bitmap = self.font.render(text_string, True, color)
-        screen.blit(text_bitmap, [self.x, self.y])
-        self.y += self.line_height
+        screen.blit(text_bitmap, self.pos)
+        self.cursor[1] += self.line_height
 
     def reset(self):
-        self.x = 10
-        self.y = 128
-        self.line_height = 30
+        self.cursor = self.pos
 
     def indent(self):
-        self.x += 20
+        self.cursor[0] += 20
 
     def unindent(self):
-        self.x -= 20
+        self.cursor[0] -= 20
