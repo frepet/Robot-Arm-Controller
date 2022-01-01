@@ -8,10 +8,15 @@
     </head>
 
     <body>
-        <h2 id="start">Press a button on your controller to start</h2>
-        <div id="gamepad">
+        <div id="gamepad" class="card">
+            <h1 id="gamepad-header">Press a button to init controller</h1>
             <div id="gamepad-buttons"></div>
             <div id="gamepad-axes"></div>
+        </div>
+        <div id="servos">
+            <div class="card" id="tail">
+                <input id="addServo" type="button" value="Add Servo" onclick="addServoListener();"/>
+            </div>
         </div>
         <canvas id="canvas"></canvas>
     </body>

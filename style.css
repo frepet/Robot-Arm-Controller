@@ -1,5 +1,31 @@
 body {
-   font-family: sans-serif;
+    background-color: #eee;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0.5rem;
+}
+
+.card {
+    background-color: #ddd;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    box-shadow: 0.1rem 0.1rem 0.2rem gray;
+    margin: 0.2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+}
+
+.card h1 {
+    font-size: 1rem;
+    margin: auto 0 0 0;
 }
 
 #gamepad-buttons {
@@ -29,15 +55,6 @@ body {
 
 #gamepad {
     width: 15rem;
-    padding: 0.4rem;
-    border-radius: 0.5rem;
-    box-shadow: 0.1rem 0.1rem 0.2rem gray;
-}
-
-#gamepad-buttons{
-}
-
-#gamepad-axes {
 }
 
 .gamepad-axis {
@@ -56,11 +73,6 @@ body {
     padding-right: 0.15rem;
 }
 
-.gamepad-axis input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    background: darkred;
-    border: none;
-}
 .gamepad-axis input::-moz-range-thumb {
     background: darkred;
     border: none;
@@ -69,4 +81,42 @@ body {
 .gamepad-axis label {
     margin: auto 0.1rem auto 0.5rem;
     padding-top: 0.3rem;
+}
+
+#addServo {
+    margin: auto 0 auto 0;
+}
+
+#servos {
+    display: flex;
+}
+
+.servo {
+    width: 15rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.servo-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.servo input {
+    height: 1rem;
+    background: none;
+}
+
+.servo input:hover {
+    cursor: pointer;
+}
+
+.servo ::-moz-range-thumb {
+    height: 1rem;
+    width: 0.5rem;
+}
+
+.servo ::-moz-range-track {
+    background: darkblue;
+    height: 0.25rem;
 }

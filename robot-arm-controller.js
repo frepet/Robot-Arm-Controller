@@ -2,9 +2,11 @@ const controllers = {};
 const buttons = [];
 const sliders = [];
 
+let nextServo = 0;
+
 function addGamepad(gamepad) {
   controllers[gamepad.index] = gamepad;
-  document.getElementById("start").remove();
+  document.getElementById("gamepad-header").textContent = "Gamepad";
 
   for (let i=0; i<gamepad.buttons.length; i++) {
     const div = document.createElement("div");
@@ -61,3 +63,49 @@ function updateStatus() {
 
 window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
 window.addEventListener("gamepaddisconnected", ({gamepad}) => removeGamepad(gamepad));
+
+function addServoListener() {
+  addServo();
+}
+
+function addServo() {
+  const servoDiv = document.createElement("div");
+  servoDiv.className = "servo card";
+
+  const headerDiv = document.createElement("div");
+  headerDiv.className = "card-header";
+
+  const header = document.createElement("h1");
+  header.textContent = `Servo ${nextServo++}`;
+  headerDiv.appendChild(header);
+
+  const enableDiv = document.createElement("div");
+  const enableLabel = document.createElement("label");
+  enableLabel.textContent= "Enable:";
+  const enableCheckbox = document.createElement("input");
+  enableCheckbox.type = "checkbox";
+  enableDiv.appendChild(enableLabel);
+  enableDiv.appendChild(enableCheckbox);
+  headerDiv.appendChild(enableDiv);
+  servoDiv.appendChild(headerDiv);
+
+  const sliderDiv = document.createElement("div");
+  sliderDiv.className = "sliderDiv servo-row";
+  const sliderLabel= document.createElement("label");
+  sliderLabel.textContent= "PWM:";
+  sliderDiv.appendChild(sliderLabel);
+  const pwmValue = document.createElement("label");
+  sliderDiv.appendChild(pwmValue);
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = "0";
+  slider.max = "255";
+  slider.value = "127";
+  slider.step = "1";
+  sliderDiv.appendChild(slider);
+  slider.oninput = () => pwmValue.textContent = slider.value.toString();
+  pwmValue.textContent = slider.value.toString();
+
+  servoDiv.appendChild(sliderDiv);
+  document.getElementById("servos").insertBefore(servoDiv, document.getElementById("tail"));
+}
