@@ -1,9 +1,15 @@
 class Servo {
+    
     address = 0;
     pwm = 127;
     endpoints = [0, 255];
     speed = 0.5;
     axis = null;
+
+    constructor(address, axis){
+        this.address = address
+        this.axis = axis
+    }
 
     move(val) {
         this.pwm += val;
@@ -11,7 +17,6 @@ class Servo {
         this.pwm = Math.floor(this.pwm)
     }
 }
-
 
 class Model {
     servos = [];
