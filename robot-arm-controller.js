@@ -43,10 +43,6 @@ function removeGamepad(gamepad) {
 }
 
 function updateStatus() {
-  const canvas = document.getElementById("canvas");
-  const context = canvas.getContext("2d");
-  context.clearRect(0, 0, canvas.width, canvas.height);
-
   for (let j in controllers) {
     const controller = controllers[j];
     for (let i=0; i<controller.buttons.length; i++) {
@@ -81,7 +77,7 @@ function addServo() {
 
   const enableDiv = document.createElement("div");
   const enableLabel = document.createElement("label");
-  enableLabel.textContent= "Enable:";
+  enableLabel.textContent = "Enable:";
   const enableCheckbox = document.createElement("input");
   enableCheckbox.type = "checkbox";
   enableDiv.appendChild(enableLabel);
@@ -91,8 +87,8 @@ function addServo() {
 
   const sliderDiv = document.createElement("div");
   sliderDiv.className = "sliderDiv servo-row";
-  const sliderLabel= document.createElement("label");
-  sliderLabel.textContent= "PWM:";
+  const sliderLabel = document.createElement("label");
+  sliderLabel.textContent = "PWM:";
   sliderDiv.appendChild(sliderLabel);
   const pwmValue = document.createElement("label");
   sliderDiv.appendChild(pwmValue);
@@ -105,7 +101,19 @@ function addServo() {
   sliderDiv.appendChild(slider);
   slider.oninput = () => pwmValue.textContent = slider.value.toString();
   pwmValue.textContent = slider.value.toString();
-
   servoDiv.appendChild(sliderDiv);
-  document.getElementById("servos").insertBefore(servoDiv, document.getElementById("tail"));
+
+  document.getElementById("cards").appendChild(servoDiv);
+}
+
+function connectListener() {
+  console.log("Connect not implemented!");
+}
+
+function loadListener() {
+  console.log("Load not implemented!");
+}
+
+function saveListener() {
+  console.log("Save not implemented!");
 }

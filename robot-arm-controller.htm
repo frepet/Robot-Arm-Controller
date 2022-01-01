@@ -8,16 +8,18 @@
     </head>
 
     <body>
-        <div id="gamepad" class="card">
-            <h1 id="gamepad-header">Press a button to init controller</h1>
-            <div id="gamepad-buttons"></div>
-            <div id="gamepad-axes"></div>
-        </div>
-        <div id="servos">
-            <div class="card" id="tail">
-                <input id="addServo" type="button" value="Add Servo" onclick="addServoListener();"/>
+        <div id="cards" class="card-container">
+            <div id="menu" class="card">
+                <input type="button" value="Connect" onclick="connectListener();"/>
+                <input type="button" value="Load" onclick="loadListener();"/>
+                <input type="button" value="Save" onclick="saveListener();"/>
+                <input type="button" value="Add Servo" onclick="addServoListener();"/>
+            </div>
+            <div id="gamepad" class="card">
+                <h1 id="gamepad-header">Press a button to init controller</h1>
+                <div id="gamepad-buttons"></div>
+                <div id="gamepad-axes"></div>
             </div>
         </div>
-        <canvas id="canvas"></canvas>
     </body>
 </html>
