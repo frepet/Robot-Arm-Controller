@@ -1,11 +1,19 @@
-const controllers = {};
+class View {
+  servoCards = [];
+}
+
+let gamepad;
 const buttons = [];
 const sliders = [];
 
-let nextServo = 0;
+const model = new Model();
+const view = new View();
 
-function addGamepad(gamepad) {
-  controllers[gamepad.index] = gamepad;
+let nextServo = 0;
+let lastUpdate = Date.now();
+
+function addGamepad(gamepad_) {
+  gamepad = gamepad_;
   document.getElementById("gamepad-header").textContent = "Gamepad";
 
   for (let i=0; i<gamepad.buttons.length; i++) {
@@ -36,24 +44,24 @@ function addGamepad(gamepad) {
   window.requestAnimationFrame(updateStatus);
 }
 
-function removeGamepad(gamepad) {
-  const d = document.getElementById("controller" + gamepad.index);
-  document.body.removeChild(d);
-  delete controllers[gamepad.index];
-}
-
 function updateStatus() {
-  for (let j in controllers) {
-    const controller = controllers[j];
-    for (let i=0; i<controller.buttons.length; i++) {
-      let val = controller.buttons[i];
-      buttons[i].className = "gamepad-button" + (val.pressed ? " pressed" : "");
-    }
+  model.update(Date.now() - lastUpdate, gamepad);
+  lastUpdate = Date.now();
 
-    for (let i=0; i<controller.axes.length; i++) {
-      sliders[i].value = controller.axes[i];
-    }
+  model.getServos().forEach(([address, pwm]) => {
+    document.getElementById(`pwmValue${address}`).textContent = pwm;
+    document.getElementById(`pwmSlider${address}`).value = pwm;
+  });
+
+  for (let i=0; i<gamepad.buttons.length; i++) {
+    let val = gamepad.buttons[i];
+    buttons[i].className = "gamepad-button" + (val.pressed ? " pressed" : "");
   }
+
+  for (let i=0; i<gamepad.axes.length; i++) {
+    sliders[i].value = gamepad.axes[i];
+  }
+
   window.requestAnimationFrame(updateStatus);
 }
 
@@ -61,18 +69,22 @@ window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
 window.addEventListener("gamepaddisconnected", ({gamepad}) => removeGamepad(gamepad));
 
 function addServoListener() {
-  addServo();
+  view.servoCards.push(addServoCard());
+  const servo = new Servo();
+  servo.axis = 0;
+  model.addServo(servo);
 }
 
-function addServo() {
+function addServoCard() {
   const servoDiv = document.createElement("div");
   servoDiv.className = "servo card";
+  servoDiv.servoAddress = nextServo++;
 
   const headerDiv = document.createElement("div");
   headerDiv.className = "card-header";
 
   const header = document.createElement("h1");
-  header.textContent = `Servo ${nextServo++}`;
+  header.textContent = `Servo ${servoDiv.servoAddress}`;
   headerDiv.appendChild(header);
 
   const enableDiv = document.createElement("div");
@@ -91,19 +103,21 @@ function addServo() {
   sliderLabel.textContent = "PWM:";
   sliderDiv.appendChild(sliderLabel);
   const pwmValue = document.createElement("label");
+  pwmValue.id = `pwmValue${servoDiv.servoAddress}`;
   sliderDiv.appendChild(pwmValue);
-  const slider = document.createElement("input");
-  slider.type = "range";
-  slider.min = "0";
-  slider.max = "255";
-  slider.value = "127";
-  slider.step = "1";
-  sliderDiv.appendChild(slider);
-  slider.oninput = () => pwmValue.textContent = slider.value.toString();
-  pwmValue.textContent = slider.value.toString();
+  const pwmSlider = document.createElement("input");
+  pwmSlider.id = `pwmSlider${servoDiv.servoAddress}`;
+  pwmSlider.type = "range";
+  pwmSlider.min = "0";
+  pwmSlider.max = "255";
+  pwmSlider.value = "127";
+  pwmSlider.step = "1";
+  sliderDiv.appendChild(pwmSlider);
+  pwmSlider.oninput = () => pwmValue.textContent = pwmSlider.value.toString();
+  pwmValue.textContent = pwmSlider.value.toString();
   servoDiv.appendChild(sliderDiv);
 
-  document.getElementById("cards").appendChild(servoDiv);
+  return document.getElementById("cards").appendChild(servoDiv);
 }
 
 function connectListener() {
