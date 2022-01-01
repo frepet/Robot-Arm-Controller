@@ -1,0 +1,72 @@
+body {
+   font-family: sans-serif;
+}
+
+#gamepad-buttons {
+    display: flex;
+}
+
+.gamepad-button {
+    background-color: gray;
+    height: 1.2rem;
+    width: 1.2rem;
+    text-align: center;
+    font-size: 1rem;
+    margin: 0.1rem;
+    border-radius: 0.2rem;
+}
+
+.gamepad-button p {
+    margin: auto 0 auto 0;
+    line-height: 1.2rem;
+    padding-top: 0.1rem;
+}
+
+#gamepad-buttons .pressed {
+    background-color: darkred;
+    color: azure;
+}
+
+#gamepad {
+    width: 15rem;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    box-shadow: 0.1rem 0.1rem 0.2rem gray;
+}
+
+#gamepad-buttons{
+}
+
+#gamepad-axes {
+}
+
+.gamepad-axis {
+    height: 1.5rem;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.gamepad-axis input {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: gray;
+    border-radius: 0.2rem;
+    margin: auto 0.1rem;
+    padding-left: 0.15rem;
+    padding-right: 0.15rem;
+}
+
+.gamepad-axis input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: darkred;
+    border: none;
+}
+.gamepad-axis input::-moz-range-thumb {
+    background: darkred;
+    border: none;
+}
+
+.gamepad-axis label {
+    margin: auto 0.1rem auto 0.5rem;
+    padding-top: 0.3rem;
+}

@@ -1,30 +1,34 @@
 const controllers = {};
+const buttons = [];
 const sliders = [];
 
 function addGamepad(gamepad) {
   controllers[gamepad.index] = gamepad;
   document.getElementById("start").remove();
 
-  let prototype =
-  `<div class="axis-slider">
-    <label>X</label>
-    <input type="range" min="-1" max="1" value="0" step="0.01">
-  </div>`
+  for (let i=0; i<gamepad.buttons.length; i++) {
+    const div = document.createElement("div");
+    div.className = "gamepad-button";
+    const label = document.createElement("p");
+    label.textContent = i.toString();
+    div.appendChild(label);
+    buttons.push(document.getElementById("gamepad-buttons").appendChild(div));
+  }
 
   for (let i = 0; i < gamepad.axes.length; i++) {
-    const node = document.createElement("div");
-    node.className = "axis-slider";
+    const div = document.createElement("div");
+    div.className = "gamepad-axis";
     const label = document.createElement("label");
     label.textContent = i.toString();
-    node.appendChild(label);
+    div.appendChild(label);
     const slider = document.createElement("input");
     slider.type = "range";
     slider.min = "-1";
     slider.max = "1";
     slider.value = "0";
     slider.step = "0.01";
-    sliders.push(node.appendChild(slider));
-    document.getElementById("axes").appendChild(node);
+    sliders.push(div.appendChild(slider));
+    document.getElementById("gamepad-axes").appendChild(div);
   }
 
   window.requestAnimationFrame(updateStatus);
@@ -45,13 +49,7 @@ function updateStatus() {
     const controller = controllers[j];
     for (let i=0; i<controller.buttons.length; i++) {
       let val = controller.buttons[i];
-      context.fillStyle = val.pressed ? "red" : "gray";
-      context.fillRect(24*i, 0, 16, 16);
-
-      context.fillStyle = "black";
-      context.font = "14px sans";
-      context.textAlign = "center";
-      context.fillText(i.toString(), 24*i + 8, 14, 36);
+      buttons[i].className = "gamepad-button" + (val.pressed ? " pressed" : "");
     }
 
     for (let i=0; i<controller.axes.length; i++) {
