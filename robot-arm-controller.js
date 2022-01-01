@@ -33,16 +33,19 @@ function updateStatus() {
 }
 
 window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
-window.addEventListener("gamepaddisconnected", ({gamepad}) => removeGamepad(gamepad));
 
 function addServoListener() {
   const servo = new Servo(nextServo++,0);
 
-  function axisSelectCallback (newAxsis){
+  function axisSelectCallback(newAxsis){
     servo.axis = newAxsis
   }
 
-  view.addServoCard(servo.address,axisSelectCallback);
+  function pwmCallback(pwm) {
+    servo.pwm = pwm;
+  }
+
+  view.addServoCard(servo.address, axisSelectCallback, pwmCallback);
   model.addServo(servo);
 }
 

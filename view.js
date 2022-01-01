@@ -1,11 +1,9 @@
 class View {
-
     servoCards = [];
 
     update(servos) {
-        servos.forEach(([address, pwm]) => {
-            document.getElementById(`pwmValue${address}`).textContent = pwm;
-            document.getElementById(`pwmSlider${address}`).value = pwm;
+        servos.forEach((servo) => {
+            this.servoCards[servo["address"]].update(servo);
         });
     }
 
@@ -38,11 +36,11 @@ class View {
         }
     }
 
-    addServoCard(address, axisSelectCallback) {
-        this.servoCards.push(this._createServoCard(address, axisSelectCallback));
+    addServoCard(address, axisSelectCallback, pwmCallback) {
+        this.servoCards.push(this._createServoCard(address, axisSelectCallback, pwmCallback));
     }
 
-    _createServoCard(servoAddress, axisSelectCallback) {
+    _createServoCard(servoAddress, axisSelectCallback, pwmCallback) {
         const servoDiv = document.createElement("div");
         servoDiv.className = "servo card";
         servoDiv.servoAddress = servoAddress;
@@ -64,13 +62,18 @@ class View {
         headerDiv.appendChild(enableDiv);
         servoDiv.appendChild(headerDiv);
 
-        servoDiv.appendChild(this._createPWMSlider(servoDiv.servoAddress));
+        const sliderDiv = this._createPWMSlider(servoDiv.servoAddress, pwmCallback);
+
+        servoDiv.appendChild(sliderDiv);
         servoDiv.appendChild(this._createAxisSelector(servoDiv.servoAddress, axisSelectCallback));
+
+
+        servoDiv.update = (servo) => sliderDiv.update(servo);
 
         return document.getElementById("cards").appendChild(servoDiv);
     }
 
-    _createPWMSlider(servoAddress) {
+    _createPWMSlider(servoAddress, pwmCallback) {
         const sliderDiv = document.createElement("div");
         sliderDiv.className = "sliderDiv servo-row";
         const sliderLabel = document.createElement("label");
@@ -87,23 +90,30 @@ class View {
         pwmSlider.value = "127";
         pwmSlider.step = "1";
         sliderDiv.appendChild(pwmSlider);
-        pwmSlider.oninput = () => pwmValue.textContent = pwmSlider.value.toString();
+        pwmSlider.oninput = () => pwmCallback(parseInt(pwmSlider.value));
         pwmValue.textContent = pwmSlider.value.toString();
+
+        sliderDiv.update = function ({pwm}) {
+            pwmSlider.value = pwm;
+            pwmValue.textContent = pwm;
+        }
         return sliderDiv;
     }
 
     _createAxisSelector(servoAddress, axisSelectCallback) {
         const axisSelectorDiv = document.createElement("div");
+        axisSelectorDiv.className = "servo-row";
         const axisSelectorLabel = document.createElement("label");
-        axisSelectorLabel.textContent = "Select axsis:";
+        axisSelectorLabel.textContent = "Axis:";
         axisSelectorDiv.appendChild(axisSelectorLabel);
         const axisSelectorInput = document.createElement("input");
+        axisSelectorInput.className = "dropdown";
         axisSelectorInput.id = `axisSelector${servoAddress}`;
         axisSelectorInput.type = "number";
-        axisSelectorInput.min = "0"
-        axisSelectorInput.max = "7"
-        axisSelectorInput.value = "0"
-        axisSelectorInput.addEventListener('input', (event) => axisSelectCallback(event.target.value))
+        axisSelectorInput.min = "0";
+        axisSelectorInput.max = "7";
+        axisSelectorInput.value = "0";
+        axisSelectorInput.addEventListener('input', (event) => axisSelectCallback(event.target.value));
         axisSelectorDiv.appendChild(axisSelectorInput);
         return axisSelectorDiv;
     }

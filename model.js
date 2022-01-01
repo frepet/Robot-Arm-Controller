@@ -1,5 +1,4 @@
 class Servo {
-    
     address = 0;
     pwm = 127;
     endpoints = [0, 255];
@@ -41,6 +40,6 @@ class Model {
     }
 
     getServos() {
-        return this.servos.map(({address, pwm}) => [address, pwm]);
+        return this.servos;
     }
 }
