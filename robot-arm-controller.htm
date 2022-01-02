@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="en-US">
-    <head>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="style.css"/>
-        <script type="text/javascript" src="model.js"></script>
-        <script type="text/javascript" src="view.js"></script>
-        <script type="text/javascript" src="robot-arm-controller.js"></script>
-        <title>Robot Arm Controller</title>
-    </head>
+<head>
+    <meta charset="utf-8">
+    <link href="style.css" rel="stylesheet"/>
+    <script src="model.js" type="text/javascript"></script>
+    <script src="view.js" type="text/javascript"></script>
+    <script src="robot-arm-controller.js" type="text/javascript"></script>
+    <title>Robot Arm Controller</title>
+</head>
 
-    <body>
-        <div id="cards" class="card-container">
-            <div id="menu" class="card">
-                <input type="button" value="Connect" onclick="connectListener();"/>
-                <input type="button" value="Load" onclick="loadListener();"/>
-                <input type="button" value="Save" onclick="saveListener();"/>
-                <input type="button" value="Add Servo" onclick="addServoListener();"/>
-            </div>
-            <div id="gamepad" class="card">
-                <h1 id="gamepad-header">Press a button to init controller</h1>
-                <div id="gamepad-buttons"></div>
-                <div id="gamepad-axes"></div>
-            </div>
-        </div>
-    </body>
+<body>
+<div class="card-container" id="cards">
+    <div class="card" id="menu">
+        <input onclick="connectListener();" type="button" value="Connect"/>
+        <input onclick="loadListener();" type="button" value="Load"/>
+        <input onclick="saveListener();" type="button" value="Save"/>
+        <input onclick="addServoListener();" type="button" value="Add Servo"/>
+    </div>
+    <div class="card" id="gamepad">
+        <h1 id="gamepad-header">Press a button to init controller</h1>
+        <div id="gamepad-buttons"></div>
+        <div id="gamepad-axes"></div>
+    </div>
+</div>
+</body>
 </html>

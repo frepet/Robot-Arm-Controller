@@ -9,54 +9,54 @@ let nextServo = 0;
 let lastUpdate = Date.now();
 
 function addGamepad(gamepad_) {
-  gamepad = gamepad_;
-  view.addGamepadCard(gamepad);
+    gamepad = gamepad_;
+    view.addGamepadCard(gamepad);
 
-  window.requestAnimationFrame(updateStatus);
+    window.requestAnimationFrame(updateStatus);
 }
 
 function updateStatus() {
-  model.update(Date.now() - lastUpdate, gamepad);
-  view.update(model.getServos());
-  lastUpdate = Date.now();
-  
-  for (let i=0; i<gamepad.buttons.length; i++) {
-    let val = gamepad.buttons[i];
-    buttons[i].className = "gamepad-button" + (val.pressed ? " pressed" : "");
-  }
+    model.update(Date.now() - lastUpdate, gamepad);
+    view.update(model.getServos());
+    lastUpdate = Date.now();
 
-  for (let i=0; i<gamepad.axes.length; i++) {
-    sliders[i].value = gamepad.axes[i];
-  }
+    for (let i = 0; i < gamepad.buttons.length; i++) {
+        let val = gamepad.buttons[i];
+        buttons[i].className = "gamepad-button" + (val.pressed ? " pressed" : "");
+    }
 
-  window.requestAnimationFrame(updateStatus);
+    for (let i = 0; i < gamepad.axes.length; i++) {
+        sliders[i].value = gamepad.axes[i];
+    }
+
+    window.requestAnimationFrame(updateStatus);
 }
 
 window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
 
 function addServoListener() {
-  const servo = new Servo(nextServo++,0);
+    const servo = new Servo(nextServo++, 0);
 
-  function axisSelectCallback(newAxsis){
-    servo.axis = newAxsis
-  }
+    function axisSelectCallback(newAxis) {
+        servo.axis = newAxis
+    }
 
-  function pwmCallback(pwm) {
-    servo.pwm = pwm;
-  }
+    function pwmCallback(pwm) {
+        servo.pwm = pwm;
+    }
 
-  view.addServoCard(servo.address, axisSelectCallback, pwmCallback);
-  model.addServo(servo);
+    view.addServoCard(servo.address, axisSelectCallback, pwmCallback);
+    model.addServo(servo);
 }
 
 function connectListener() {
-  console.log("Connect not implemented!");
+    console.log("Connect not implemented!");
 }
 
 function loadListener() {
-  console.log("Load not implemented!");
+    console.log("Load not implemented!");
 }
 
 function saveListener() {
-  console.log("Save not implemented!");
+    console.log("Save not implemented!");
 }

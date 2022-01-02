@@ -5,7 +5,7 @@ class Servo {
     speed = 0.5;
     axis = null;
 
-    constructor(address, axis){
+    constructor(address, axis) {
         this.address = address
         this.axis = axis
     }
