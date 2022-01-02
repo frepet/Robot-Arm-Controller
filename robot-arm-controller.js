@@ -3,8 +3,8 @@ const buttons = [];
 const sliders = [];
 
 const model = new Model();
-model.loggerCallback = msg => view.log(msg);
 const view = new View();
+model.loggerCallback = view.log;
 
 let nextServo = 0;
 let lastUpdate = Date.now();
@@ -68,7 +68,7 @@ function addServoListener() {
 }
 
 function connectListener() {
-    model.connect("localhost", "8765")
+    model.connect("localhost", "8765");
 }
 
 function loadListener() {
@@ -76,5 +76,5 @@ function loadListener() {
 }
 
 function saveListener() {
-    console.log("Save not implemented!");
+    console.log(JSON.stringify(model.getServos(), null, 4));
 }

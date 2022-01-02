@@ -69,27 +69,13 @@ class Model {
     connect(address, port) {
         const socket = new WebSocket(`ws://${address}:${port}`);
         socket.addEventListener('open', _ => this.onSocketOpen(socket));
-        socket.addEventListener('error', this.onSocketError);
-        socket.addEventListener('close', this.onSocketClose);
-        socket.addEventListener('message', this.onSocketMessage);
+        socket.addEventListener('close', (_) => {this.socket = null; this.loggerCallback("Disconnected!")});
+        socket.addEventListener('message', ({data}) => this.loggerCallback(data));
     }
 
     onSocketOpen(socket) {
         this.socket = socket;
-        this.loggerCallback("Websocket connected!");
-    }
-
-    onSocketError(event) {
-        this.loggerCallback("Websocket error: " + event.data);
-    }
-
-    onSocketClose(event) {
-        this.socket = null;
-        this.loggerCallback("Websocket disconnected!");
-    }
-
-    onSocketMessage(event) {
-        this.loggerCallback(event.data)
+        this.loggerCallback("Connected!");
     }
 
     sendPWMs() {

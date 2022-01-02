@@ -1,5 +1,4 @@
 import asyncio
-import random
 import sys
 from time import time
 
@@ -18,7 +17,7 @@ try:
 	com_rate = sys.argv[2]
 	socket_port = sys.argv[3]
 except IndexError as ex:
-	print("USAGE: {sys.argv[0]} COM_PORT BAUD_RATE SOCKET_PORT", file=sys.stderr)
+	print(f"USAGE: {sys.argv[0]} COM_PORT BAUD_RATE SOCKET_PORT", file=sys.stderr)
 	exit(1)
 
 
