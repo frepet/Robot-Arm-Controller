@@ -47,14 +47,23 @@ function addServoListener() {
     }
 
     function minCallback(min) {
-      servo.min = min;
+        servo.min = min;
     }
 
     function maxCallback(max) {
-      servo.max = max;
+        servo.max = max;
     }
 
-    view.addServoCard(servo.address, axisSelectCallback, pwmCallback,minCallback,maxCallback);
+    function speedCallback(speed) {
+        servo.speed = speed;
+    }
+
+    view.addServoCard(servo.address,
+        axisSelectCallback,
+        pwmCallback,
+        minCallback,
+        maxCallback,
+        speedCallback);
     model.addServo(servo);
 }
 

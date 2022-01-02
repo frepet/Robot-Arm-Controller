@@ -36,147 +36,108 @@ class View {
         }
     }
 
-    addServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback) {
-        this.servoCards.push(this._createServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback));
+    addServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
+        this.servoCards.push(this._createServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback));
     }
 
-    _createServoCard(servoAddress, axisSelectCallback, pwmCallback, minCallback, maxCallback) {
+    _createServoCard(servoAddress, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
         const servoDiv = document.createElement("div");
         servoDiv.className = "servo card";
         servoDiv.servoAddress = servoAddress;
 
         const headerDiv = document.createElement("div");
         headerDiv.className = "card-header";
-
         const header = document.createElement("h1");
         header.textContent = `Servo ${servoDiv.servoAddress}`;
         headerDiv.appendChild(header);
 
-        const enableDiv = document.createElement("div");
-        const enableLabel = document.createElement("label");
-        enableLabel.textContent = "Enable:";
-        const enableCheckbox = document.createElement("input");
-        enableCheckbox.type = "checkbox";
-        enableDiv.appendChild(enableLabel);
-        enableDiv.appendChild(enableCheckbox);
-        headerDiv.appendChild(enableDiv);
+        const pwmUpdate = (input, value, { pwm }) => {
+            input.value = pwm;
+            value.textContent = Math.round(pwm).toString();
+        }
+        const pwmDiv = this._createSliderRow("PWM", 0, 255, 127, 1, pwmCallback, pwmUpdate);
+
+        const minUpdate = (input, value, { endpoints }) => {
+            input.value = endpoints[0];
+            value.textContent = endpoints[0];
+        }
+        const minDiv = this._createSliderRow("Min", 0, 255, 0, 1, minCallback, minUpdate);
+
+        const maxUpdate = (input, value, { endpoints }) => {
+            input.value = endpoints[1];
+            value.textContent = endpoints[1];
+        }
+        const maxDiv = this._createSliderRow("Max", 0, 255, 255, 1, maxCallback, maxUpdate);
+
+        const speedDiv = this._createDropdownRow("Speed", -5, 5, 1, 0.1, speedCallback);
+
         servoDiv.appendChild(headerDiv);
-
-        const sliderDiv = this._createPWMSlider(pwmCallback);
-        const minMaxSliderDiv = this._createEndpointsSlider(minCallback, maxCallback);
-
-        servoDiv.appendChild(sliderDiv);
-        servoDiv.appendChild(minMaxSliderDiv);
-        servoDiv.appendChild(this._createAxisSelector(axisSelectCallback));
-
+        servoDiv.appendChild(pwmDiv);
+        servoDiv.appendChild(minDiv);
+        servoDiv.appendChild(maxDiv);
+        servoDiv.appendChild(speedDiv);
+        servoDiv.appendChild(this._createDropdownRow("Axis", 0, 7, 0, 1, axisSelectCallback));
 
         servoDiv.update = (servo) => {
-            sliderDiv.update(servo);
-            minMaxSliderDiv.update(servo);
+            pwmDiv.update(servo);
+            minDiv.update(servo);
+            maxDiv.update(servo);
         };
 
         return document.getElementById("servos").appendChild(servoDiv);
     }
 
-    _createPWMSlider(pwmCallback) {
-        const sliderDiv = document.createElement("div");
-        sliderDiv.className = "sliderDiv servo-row";
-        const sliderLabel = document.createElement("label");
-        sliderLabel.textContent = "PWM:";
-        sliderDiv.appendChild(sliderLabel);
-        const pwmValue = document.createElement("label");
-        sliderDiv.appendChild(pwmValue);
-        const pwmSlider = document.createElement("input");
-        pwmSlider.type = "range";
-        pwmSlider.min = "0";
-        pwmSlider.max = "255";
-        pwmSlider.value = "127";
-        pwmSlider.step = "1";
-        sliderDiv.appendChild(pwmSlider);
-        pwmSlider.oninput = () => pwmCallback(parseInt(pwmSlider.value));
-        pwmValue.textContent = pwmSlider.value.toString();
+    /**
+     *  Creates a slider row for a servo card.
+     * @param name Name of the slider
+     * @param min Min value
+     * @param max Max value
+     * @param value Initial value
+     * @param step Step size
+     * @param callback Call this function when the slider is changed by user
+     * @param update This function is called when model updates
+     * @returns {HTMLDivElement} The slider row as a div-element.
+     * @private
+     */
+    _createSliderRow(name, min, max, value, step, callback, update) {
+        const div = document.createElement("div");
+        div.className = "sliderDiv servo-row";
+        const label = document.createElement("label");
+        label.textContent = name + ": ";
+        const val = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "range";
+        input.min = min;
+        input.max = max;
+        input.value = val;
+        input.step = step;
+        input.oninput = () => callback(parseInt(input.value));
+        val.textContent = input.value.toString();
 
-        sliderDiv.update = function ({ pwm }) {
-            pwmSlider.value = pwm;
-            pwmValue.textContent = pwm;
-        }
-        return sliderDiv;
+        div.appendChild(label);
+        div.appendChild(val);
+        div.appendChild(input);
+        div.update = (state) => update(input, val, state);
+        return div;
     }
 
-    _createAxisSelector(axisSelectCallback) {
-        const axisSelectorDiv = document.createElement("div");
-        axisSelectorDiv.className = "servo-row";
-        const axisSelectorLabel = document.createElement("label");
-        axisSelectorLabel.textContent = "Axis:";
-        axisSelectorDiv.appendChild(axisSelectorLabel);
-        const axisSelectorInput = document.createElement("input");
-        axisSelectorInput.className = "dropdown";
-        axisSelectorInput.type = "number";
-        axisSelectorInput.min = "0";
-        axisSelectorInput.max = "7";
-        axisSelectorInput.value = "0";
-        axisSelectorInput.addEventListener('input', (event) => axisSelectCallback(event.target.value));
-        axisSelectorDiv.appendChild(axisSelectorInput);
-        return axisSelectorDiv;
-    }
+    _createDropdownRow(name, min, max, value, step, callback) {
+        const div = document.createElement("div");
+        div.className = "servo-row";
+        const label = document.createElement("label");
+        label.textContent = name;
+        const input = document.createElement("input");
+        input.className = "dropdown";
+        input.type = "number";
+        input.min = min;
+        input.max = max;
+        input.value = value;
+        input.step = step
+        input.addEventListener('input', (event) => callback(event.target.value));
 
-    _createEndpointsSlider(minCallback, maxCallback) {
-        const endpointSliderDiv = document.createElement("div");
-
-        const endpointLabel = document.createElement("label");
-        endpointLabel.textContent = "Endpoint";
-        endpointSliderDiv.appendChild(endpointLabel);
-        const linebreak = document.createElement("br");
-        endpointSliderDiv.appendChild(linebreak);
-
-        const minDiv = document.createElement("div");
-        minDiv.className = "sliderDiv servo-row";
-        const minLabel = document.createElement("label");
-        minLabel.textContent = "Min:";
-        minDiv.appendChild(minLabel);
-        const minValue = document.createElement("label");
-        minDiv.appendChild(minValue);
-
-        const minSlider = document.createElement("input");
-        minSlider.type = "range";
-        minSlider.min = "0";
-        minSlider.max = "255";
-        minSlider.value = "0";
-        minSlider.step = "1";
-        minSlider.oninput = () => minCallback(parseInt(minSlider.value));
-        minDiv.appendChild(minSlider);
-        endpointSliderDiv.appendChild(minDiv);
-        
-        const maxDiv = document.createElement("div");
-        maxDiv.className = "sliderDiv servo-row";
-        const maxLabel = document.createElement("label");
-        maxLabel.textContent = "Max:";
-        maxDiv.appendChild(maxLabel);
-        const maxValue = document.createElement("label");
-        maxDiv.appendChild(maxValue);
-
-        const maxSlider = document.createElement("input");
-        maxSlider.type = "range";
-        maxSlider.min = "0";
-        maxSlider.max = "255";
-        maxSlider.value = "255";
-        maxSlider.step = "1";
-        maxSlider.oninput = () => maxCallback(parseInt(maxSlider.value));
-        maxDiv.appendChild(maxSlider);
-        endpointSliderDiv.appendChild(maxDiv);        
-
-        maxValue.textContent = "255";
-        minValue.textContent = "0";
-
-        endpointSliderDiv.update = function ({ endpoints }) {
-            minSlider.value = endpoints[0];
-            minValue.textContent = endpoints[0];
-
-            maxSlider.value = endpoints[1];
-            maxValue.textContent = endpoints[1];
-        }
-
-        return endpointSliderDiv;
+        div.appendChild(label);
+        div.appendChild(input);
+        return div;
     }
 
     log(msg) {

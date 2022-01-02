@@ -123,7 +123,7 @@ body {
 }
 
 .servo-row .dropdown {
-    width: 2rem;
+    width: 3rem;
 }
 
 .servo ::-moz-range-thumb {

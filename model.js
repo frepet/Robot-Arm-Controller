@@ -2,7 +2,7 @@ class Servo {
     address = 0;
     pwm = 127;
     endpoints = [0, 255];
-    speed = 0.5;
+    speed = 1;
     axis = null;
 
     constructor(address, axis) {
@@ -13,20 +13,26 @@ class Servo {
     move(val) {
         this.pwm += val;
         this.pwm = this.pwm > this.endpoints[1] ? this.endpoints[1] : this.pwm < this.endpoints[0] ? this.endpoints[0] : this.pwm;
-        this.pwm = Math.floor(this.pwm)
     }
+
     set pwm(pwm){
         this.pwm = pwm;
     }
+
     set min(min){
         this.endpoints[0] = min;
         this.endpoints[0] = this.endpoints[0] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[0] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[0];
-        this.endpoints[0] = Math.floor(this.endpoints[0])
+        this.endpoints[0] = Math.round(this.endpoints[0])
     }
+
     set max(max){
         this.endpoints[1] = max;
         this.endpoints[1] = this.endpoints[1] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[1] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[1];
-        this.endpoints[1] = Math.floor(this.endpoints[1])
+        this.endpoints[1] = Math.round(this.endpoints[1])
+    }
+
+    set speed(speed) {
+        this.speed = speed;
     }
 }
 
@@ -89,7 +95,7 @@ class Model {
     sendPWMs() {
         if (this.socket !== null) {
             const data = {"servos": {}};
-            this.servos.forEach(({address, pwm}) => data["servos"][address] = pwm);
+            this.servos.forEach(({address, pwm}) => data["servos"][address] = Math.round(pwm));
             this.socket.send(JSON.stringify(data));
         }
     }
