@@ -36,6 +36,11 @@ body {
     margin: 0.2rem;
 }
 
+#menu {
+    flex-direction: row;
+    padding: 0;
+}
+
 #gamepad {
     width: 10rem;
 }
@@ -129,4 +134,13 @@ body {
 .servo ::-moz-range-track {
     background: darkblue;
     height: 0.25rem;
+}
+
+#logger {
+    height: 10rem;
+    overflow: scroll;
+}
+
+#logger p {
+    margin: 0;
 }

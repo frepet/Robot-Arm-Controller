@@ -1,69 +1,103 @@
 /*
- * Arduino code for Robot Arm Controller
+ * Robot Arm Controller for Arduino
  * 
- * Reads a 4 byte serial signal and sets servos.
- * Servos should be connected to port 10-13.
+ * Reads n-amount of servo values from serial and
+ * sets the servos accordingly.
+ * 
  *
  * Signal:
- *  BYTE | VALUE | NOTE
- *  -----------------------
- *    0  |   2   | Start
- *    1  |'a'-'z'| Address
- *    2  | 0-255 | Value
- *    3  |   3   | End
+ *    BYTE | VALUE | NOTE
+ *    -----------------------
+ *      0  |   2   | Start
+ *      1  | 0-255 | Number of servos
+ *  2:end-1| 0-255 | PWM-value
+ *     end | 0-255 | Checksum = sum(PWM-values) % 256
  */
 
 #include <Servo.h>
 
-const int MSG_SIZE = 2;
 const int SERVO_START_PIN = 10;
 const int SERVOS = 4;
-const int BAUD_RATE = 115200;
+const int BAUD_RATE = 19200;
 const byte STX = 2;
-const byte ETX = 3;
+const int BAD_CHECKSUM_LED_PIN = 2;
 
-byte msg[MSG_SIZE];
+long last_bad_checksum = millis();
+byte pwms[SERVOS];
 Servo servo[SERVOS];
 
 void setup() {
+  pinMode(BAD_CHECKSUM_LED_PIN, OUTPUT);
 	for (int i = 0; i < SERVOS; i++) {
 		servo[i].attach(SERVO_START_PIN + i);
 	}
 	Serial.begin(BAUD_RATE);
 }
 
+byte nextByte() {
+  byte b = Serial.read();
+  while (b == -1) {
+    b = Serial.read();
+    delay(10);
+  }
+  return b;
+}
+
 void clearMessage() {
-	memset(msg, 0, MSG_SIZE);
+	memset(pwms, 0, SERVOS);
 }
 
 void waitForSTX() {
-	byte temp = Serial.read();
+	byte temp = nextByte();
 	while (temp != STX) {
-		temp = Serial.read();
+		temp = nextByte();
 		delay(10);
 	}
 }
 
-void readSerial(byte *msg) {
-	byte temp[MSG_SIZE];
-	for (int i = 0; i < MSG_SIZE; i++) {
-		temp[i] = Serial.read();
+bool readSerial(byte *pwms) {
+  byte n = nextByte();
+  if (n != SERVOS) {
+    // Wrong number of servos, read all the data and throw away!
+    for (int i = 0; i < n+1; i++) {
+      nextByte();
+    }
+    return;
+  }
+  
+	byte temp[SERVOS] = {0};
+  byte checksum = 0;
+	for (int i = 0; i < SERVOS; i++) {
+		temp[i] = nextByte();
+    checksum += temp[i];
 	}
-	if (Serial.read() == ETX) {
-		memcpy(msg, temp, MSG_SIZE);
+
+  byte received_checksum = nextByte();
+	if (received_checksum != checksum) {
+    Serial.print("Bad checksum, received: ");
+    Serial.print(received_checksum);
+    Serial.print(", calculated: ");
+    Serial.println(checksum);
+    last_bad_checksum = millis();
+    return false;
 	}
+  
+  memcpy(pwms, temp, SERVOS);
+  return true;
+}
+
+void updateServos(byte *pwms) {
+  for (int i = 0; i < SERVOS; i++) {
+    servo[i].writeMicroseconds(map(pwms[i], 0, 255, 500, 2500));
+  }
 }
 
 void loop() {
 	clearMessage();
 	waitForSTX();
-	readSerial(msg);
+	if (readSerial(pwms)) {
+    updateServos(pwms);
+	}
 
-	byte servo_idx = msg[0] - 'a';
-	if (servo_idx < 0 || servo_idx >= SERVOS)
-		return;
-
-	byte pwm = msg[1];
-
-	servo[SERVO_START_PIN + servo_idx].writeMicroseconds(map(pwm, 0, 255, 500, 2500));
+  digitalWrite(BAD_CHECKSUM_LED_PIN, last_bad_checksum + 100 <= millis() ? LOW : HIGH);
 }

@@ -32,6 +32,8 @@ class Servo {
 
 class Model {
     servos = [];
+    socket = null;
+    loggerCallback = console.log;
 
     addServo(servo) {
         this.servos.push(servo);
@@ -50,9 +52,45 @@ class Model {
                 servo.move(gamepad.axes[servo.axis] * servo.speed * delta);
             }
         );
+
+        this.sendPWMs();
     }
 
     getServos() {
         return this.servos;
+    }
+
+    connect(address, port) {
+        const socket = new WebSocket(`ws://${address}:${port}`);
+        socket.addEventListener('open', _ => this.onSocketOpen(socket));
+        socket.addEventListener('error', this.onSocketError);
+        socket.addEventListener('close', this.onSocketClose);
+        socket.addEventListener('message', this.onSocketMessage);
+    }
+
+    onSocketOpen(socket) {
+        this.socket = socket;
+        this.loggerCallback("Websocket connected!");
+    }
+
+    onSocketError(event) {
+        this.loggerCallback("Websocket error: " + event.data);
+    }
+
+    onSocketClose(event) {
+        this.socket = null;
+        this.loggerCallback("Websocket disconnected!");
+    }
+
+    onSocketMessage(event) {
+        this.loggerCallback(event.data)
+    }
+
+    sendPWMs() {
+        if (this.socket !== null) {
+            const data = {"servos": {}};
+            this.servos.forEach(({address, pwm}) => data["servos"][address] = pwm);
+            this.socket.send(JSON.stringify(data));
+        }
     }
 }

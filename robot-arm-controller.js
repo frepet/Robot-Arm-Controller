@@ -3,6 +3,7 @@ const buttons = [];
 const sliders = [];
 
 const model = new Model();
+model.loggerCallback = msg => view.log(msg);
 const view = new View();
 
 let nextServo = 0;
@@ -58,7 +59,7 @@ function addServoListener() {
 }
 
 function connectListener() {
-    console.log("Connect not implemented!");
+    model.connect("localhost", "8765")
 }
 
 function loadListener() {

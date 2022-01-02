@@ -75,7 +75,7 @@ class View {
             minMaxSliderDiv.update(servo);
         };
 
-        return document.getElementById("cards").appendChild(servoDiv);
+        return document.getElementById("servos").appendChild(servoDiv);
     }
 
     _createPWMSlider(pwmCallback) {
@@ -170,10 +170,8 @@ class View {
 
         endpointSliderDiv.update = function ({ endpoints }) {
             minSlider.value = endpoints[0];
-            //minSlider.max = endpoints[1];
             minValue.textContent = endpoints[0];
 
-            //maxSlider.min = endpoints[0];
             maxSlider.value = endpoints[1];
             maxValue.textContent = endpoints[1];
         }
@@ -181,4 +179,11 @@ class View {
         return endpointSliderDiv;
     }
 
+    log(msg) {
+        const logger = document.getElementById("logger");
+        const log = document.createElement("p");
+        log.textContent = msg;
+        logger.appendChild(log);
+        logger.scrollTo(0, logger.scrollHeight);
+    }
 }
