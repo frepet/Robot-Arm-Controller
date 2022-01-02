@@ -36,11 +36,11 @@ class View {
         }
     }
 
-    addServoCard(address, axisSelectCallback, pwmCallback) {
-        this.servoCards.push(this._createServoCard(address, axisSelectCallback, pwmCallback));
+    addServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback) {
+        this.servoCards.push(this._createServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback));
     }
 
-    _createServoCard(servoAddress, axisSelectCallback, pwmCallback) {
+    _createServoCard(servoAddress, axisSelectCallback, pwmCallback, minCallback, maxCallback) {
         const servoDiv = document.createElement("div");
         servoDiv.className = "servo card";
         servoDiv.servoAddress = servoAddress;
@@ -62,28 +62,31 @@ class View {
         headerDiv.appendChild(enableDiv);
         servoDiv.appendChild(headerDiv);
 
-        const sliderDiv = this._createPWMSlider(servoDiv.servoAddress, pwmCallback);
+        const sliderDiv = this._createPWMSlider(pwmCallback);
+        const minMaxSliderDiv = this._createEndpointsSlider(minCallback, maxCallback);
 
         servoDiv.appendChild(sliderDiv);
-        servoDiv.appendChild(this._createAxisSelector(servoDiv.servoAddress, axisSelectCallback));
+        servoDiv.appendChild(minMaxSliderDiv);
+        servoDiv.appendChild(this._createAxisSelector(axisSelectCallback));
 
 
-        servoDiv.update = (servo) => sliderDiv.update(servo);
+        servoDiv.update = (servo) => {
+            sliderDiv.update(servo);
+            minMaxSliderDiv.update(servo);
+        };
 
         return document.getElementById("cards").appendChild(servoDiv);
     }
 
-    _createPWMSlider(servoAddress, pwmCallback) {
+    _createPWMSlider(pwmCallback) {
         const sliderDiv = document.createElement("div");
         sliderDiv.className = "sliderDiv servo-row";
         const sliderLabel = document.createElement("label");
         sliderLabel.textContent = "PWM:";
         sliderDiv.appendChild(sliderLabel);
         const pwmValue = document.createElement("label");
-        pwmValue.id = `pwmValue${servoAddress}`;
         sliderDiv.appendChild(pwmValue);
         const pwmSlider = document.createElement("input");
-        pwmSlider.id = `pwmSlider${servoAddress}`;
         pwmSlider.type = "range";
         pwmSlider.min = "0";
         pwmSlider.max = "255";
@@ -93,14 +96,14 @@ class View {
         pwmSlider.oninput = () => pwmCallback(parseInt(pwmSlider.value));
         pwmValue.textContent = pwmSlider.value.toString();
 
-        sliderDiv.update = function ({pwm}) {
+        sliderDiv.update = function ({ pwm }) {
             pwmSlider.value = pwm;
             pwmValue.textContent = pwm;
         }
         return sliderDiv;
     }
 
-    _createAxisSelector(servoAddress, axisSelectCallback) {
+    _createAxisSelector(axisSelectCallback) {
         const axisSelectorDiv = document.createElement("div");
         axisSelectorDiv.className = "servo-row";
         const axisSelectorLabel = document.createElement("label");
@@ -108,7 +111,6 @@ class View {
         axisSelectorDiv.appendChild(axisSelectorLabel);
         const axisSelectorInput = document.createElement("input");
         axisSelectorInput.className = "dropdown";
-        axisSelectorInput.id = `axisSelector${servoAddress}`;
         axisSelectorInput.type = "number";
         axisSelectorInput.min = "0";
         axisSelectorInput.max = "7";
@@ -117,4 +119,66 @@ class View {
         axisSelectorDiv.appendChild(axisSelectorInput);
         return axisSelectorDiv;
     }
+
+    _createEndpointsSlider(minCallback, maxCallback) {
+        const endpointSliderDiv = document.createElement("div");
+
+        const endpointLabel = document.createElement("label");
+        endpointLabel.textContent = "Endpoint";
+        endpointSliderDiv.appendChild(endpointLabel);
+        const linebreak = document.createElement("br");
+        endpointSliderDiv.appendChild(linebreak);
+
+        const minDiv = document.createElement("div");
+        minDiv.className = "sliderDiv servo-row";
+        const minLabel = document.createElement("label");
+        minLabel.textContent = "Min:";
+        minDiv.appendChild(minLabel);
+        const minValue = document.createElement("label");
+        minDiv.appendChild(minValue);
+
+        const minSlider = document.createElement("input");
+        minSlider.type = "range";
+        minSlider.min = "0";
+        minSlider.max = "255";
+        minSlider.value = "0";
+        minSlider.step = "1";
+        minSlider.oninput = () => minCallback(parseInt(minSlider.value));
+        minDiv.appendChild(minSlider);
+        endpointSliderDiv.appendChild(minDiv);
+        
+        const maxDiv = document.createElement("div");
+        maxDiv.className = "sliderDiv servo-row";
+        const maxLabel = document.createElement("label");
+        maxLabel.textContent = "Max:";
+        maxDiv.appendChild(maxLabel);
+        const maxValue = document.createElement("label");
+        maxDiv.appendChild(maxValue);
+
+        const maxSlider = document.createElement("input");
+        maxSlider.type = "range";
+        maxSlider.min = "0";
+        maxSlider.max = "255";
+        maxSlider.value = "255";
+        maxSlider.step = "1";
+        maxSlider.oninput = () => maxCallback(parseInt(maxSlider.value));
+        maxDiv.appendChild(maxSlider);
+        endpointSliderDiv.appendChild(maxDiv);        
+
+        maxValue.textContent = "255";
+        minValue.textContent = "0";
+
+        endpointSliderDiv.update = function ({ endpoints }) {
+            minSlider.value = endpoints[0];
+            //minSlider.max = endpoints[1];
+            minValue.textContent = endpoints[0];
+
+            //maxSlider.min = endpoints[0];
+            maxSlider.value = endpoints[1];
+            maxValue.textContent = endpoints[1];
+        }
+
+        return endpointSliderDiv;
+    }
+
 }

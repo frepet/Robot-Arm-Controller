@@ -45,7 +45,15 @@ function addServoListener() {
         servo.pwm = pwm;
     }
 
-    view.addServoCard(servo.address, axisSelectCallback, pwmCallback);
+    function minCallback(min) {
+      servo.min = min;
+    }
+
+    function maxCallback(max) {
+      servo.max = max;
+    }
+
+    view.addServoCard(servo.address, axisSelectCallback, pwmCallback,minCallback,maxCallback);
     model.addServo(servo);
 }
 

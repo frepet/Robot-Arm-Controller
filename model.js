@@ -15,6 +15,19 @@ class Servo {
         this.pwm = this.pwm > this.endpoints[1] ? this.endpoints[1] : this.pwm < this.endpoints[0] ? this.endpoints[0] : this.pwm;
         this.pwm = Math.floor(this.pwm)
     }
+    set pwm(pwm){
+        this.pwm = pwm;
+    }
+    set min(min){
+        this.endpoints[0] = min;
+        this.endpoints[0] = this.endpoints[0] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[0] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[0];
+        this.endpoints[0] = Math.floor(this.endpoints[0])
+    }
+    set max(max){
+        this.endpoints[1] = max;
+        this.endpoints[1] = this.endpoints[1] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[1] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[1];
+        this.endpoints[1] = Math.floor(this.endpoints[1])
+    }
 }
 
 class Model {
