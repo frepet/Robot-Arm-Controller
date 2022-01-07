@@ -41,6 +41,10 @@ body {
     padding: 0;
 }
 
+#menu button {
+    margin: 0.2rem;
+}
+
 #gamepad {
     width: 10rem;
 }

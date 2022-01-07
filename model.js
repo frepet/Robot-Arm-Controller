@@ -10,6 +10,14 @@ class Servo {
         this.axis = axis
     }
 
+    static fromJSON({address, pwm, endpoints, speed, axis}) {
+        let servo = new Servo(address, axis);
+        servo.pwm = pwm;
+        servo.endpoints = endpoints;
+        servo.speed = speed;
+        return servo;
+    }
+
     move(val) {
         this.pwm += val;
         this.pwm = this.pwm > this.endpoints[1] ? this.endpoints[1] : this.pwm < this.endpoints[0] ? this.endpoints[0] : this.pwm;
@@ -48,11 +56,9 @@ class Model {
     update(delta, gamepad) {
         this.servos.forEach((servo) => {
                 if (servo.axis === null) {
-                    console.log("No servo.axis");
                     return;
                 }
-                if (gamepad.axes[servo.axis] === null) {
-                    console.log("No gamepad.axes");
+                if (!gamepad || gamepad.axes[servo.axis] === null) {
                     return;
                 }
                 servo.move(gamepad.axes[servo.axis] * servo.speed * delta);
@@ -84,5 +90,9 @@ class Model {
             this.servos.forEach(({address, pwm}) => data["servos"][address] = Math.round(pwm));
             this.socket.send(JSON.stringify(data));
         }
+    }
+
+    clearServos() {
+        this.servos = [];
     }
 }

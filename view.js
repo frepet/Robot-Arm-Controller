@@ -1,9 +1,9 @@
 class View {
-    servoCards = [];
+    servoCards = new Map();
 
     update(servos) {
         servos.forEach((servo) => {
-            this.servoCards[servo["address"]].update(servo);
+            this.servoCards.get(servo["address"].toString()).update(servo);
         });
     }
 
@@ -36,14 +36,14 @@ class View {
         }
     }
 
-    addServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
-        this.servoCards.push(this._createServoCard(address, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback));
+    addServoCard(servo, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
+        this.servoCards.set(servo.address.toString(),this._createServoCard(servo, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback));
     }
 
-    _createServoCard(servoAddress, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
+    _createServoCard(servo, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
         const servoDiv = document.createElement("div");
         servoDiv.className = "servo card";
-        servoDiv.servoAddress = servoAddress;
+        servoDiv.servoAddress = servo.address;
 
         const headerDiv = document.createElement("div");
         headerDiv.className = "card-header";
@@ -55,28 +55,28 @@ class View {
             input.value = pwm;
             value.textContent = Math.round(pwm).toString();
         }
-        const pwmDiv = this._createSliderRow("PWM", 0, 255, 127, 1, pwmCallback, pwmUpdate);
+        const pwmDiv = this._createSliderRow("PWM", 0, 255, servo.pwm, 1, pwmCallback, pwmUpdate);
 
         const minUpdate = (input, value, { endpoints }) => {
             input.value = endpoints[0];
             value.textContent = endpoints[0];
         }
-        const minDiv = this._createSliderRow("Min", 0, 255, 0, 1, minCallback, minUpdate);
+        const minDiv = this._createSliderRow("Min", 0, 255, servo.min, 1, minCallback, minUpdate);
 
         const maxUpdate = (input, value, { endpoints }) => {
             input.value = endpoints[1];
             value.textContent = endpoints[1];
         }
-        const maxDiv = this._createSliderRow("Max", 0, 255, 255, 1, maxCallback, maxUpdate);
+        const maxDiv = this._createSliderRow("Max", 0, 255, servo.max, 1, maxCallback, maxUpdate);
 
-        const speedDiv = this._createDropdownRow("Speed", -5, 5, 1, 0.1, speedCallback);
+        const speedDiv = this._createDropdownRow("Speed", -5, 5, servo.speed, 0.1, speedCallback);
 
         servoDiv.appendChild(headerDiv);
         servoDiv.appendChild(pwmDiv);
         servoDiv.appendChild(minDiv);
         servoDiv.appendChild(maxDiv);
         servoDiv.appendChild(speedDiv);
-        servoDiv.appendChild(this._createDropdownRow("Axis", 0, 7, 0, 1, axisSelectCallback));
+        servoDiv.appendChild(this._createDropdownRow("Axis", 0, 7, servo.axis, 1, axisSelectCallback));
 
         servoDiv.update = (servo) => {
             pwmDiv.update(servo);
@@ -146,5 +146,12 @@ class View {
         log.textContent = msg;
         logger.appendChild(log);
         logger.scrollTo(0, logger.scrollHeight);
+    }
+
+    clearServos() {
+        this.servoCards.forEach((val, key) => {
+            val.remove();
+            this.servoCards.delete(key);
+        });
     }
 }

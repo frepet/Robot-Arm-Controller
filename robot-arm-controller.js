@@ -9,11 +9,13 @@ model.loggerCallback = view.log;
 let nextServo = 0;
 let lastUpdate = Date.now();
 
+window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
+document.getElementById("file-selector").addEventListener('change', onLoadListener);
+window.requestAnimationFrame(updateStatus);
+
 function addGamepad(gamepad_) {
     gamepad = gamepad_;
     view.addGamepadCard(gamepad);
-
-    window.requestAnimationFrame(updateStatus);
 }
 
 function updateStatus() {
@@ -21,22 +23,28 @@ function updateStatus() {
     view.update(model.getServos());
     lastUpdate = Date.now();
 
-    for (let i = 0; i < gamepad.buttons.length; i++) {
-        let val = gamepad.buttons[i];
-        buttons[i].className = "gamepad-button" + (val.pressed ? " pressed" : "");
-    }
+    if (gamepad) {
+        for (let i = 0; i < gamepad.buttons.length; i++) {
+            let val = gamepad.buttons[i];
+            buttons[i].className = "gamepad-button" + (val.pressed ? " pressed" : "");
+        }
 
-    for (let i = 0; i < gamepad.axes.length; i++) {
-        sliders[i].value = gamepad.axes[i];
+        for (let i = 0; i < gamepad.axes.length; i++) {
+            sliders[i].value = gamepad.axes[i];
+        }
     }
 
     window.requestAnimationFrame(updateStatus);
 }
 
-window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
-
-function addServoListener() {
-    const servo = new Servo(nextServo++, 0);
+function addServoListener(savedData = null) {
+    let servo;
+    if (savedData === null) {
+        servo = new Servo(nextServo++, 0);
+    } else {
+        servo = Servo.fromJSON(savedData);
+        nextServo++;
+    }
 
     function axisSelectCallback(newAxis) {
         servo.axis = newAxis
@@ -58,7 +66,7 @@ function addServoListener() {
         servo.speed = speed;
     }
 
-    view.addServoCard(servo.address,
+    view.addServoCard(servo,
         axisSelectCallback,
         pwmCallback,
         minCallback,
@@ -71,10 +79,43 @@ function connectListener() {
     model.connect("localhost", "8765");
 }
 
-function loadListener() {
-    console.log("Load not implemented!");
+function onLoadListener(event) {
+    model.clearServos();
+    view.clearServos();
+    nextServo = 0;
+
+    const file = event.target.files[0];
+    if (file.type !== "application/json") {
+        alert("Must be a .json savefile!");
+        return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener('loadend', _ => load(JSON.parse(reader.result.toString())));
+    reader.readAsText(file);
+}
+
+function load(saveData) {
+    saveData.forEach(servo => addServoListener(servo));
 }
 
 function saveListener() {
-    console.log(JSON.stringify(model.getServos(), null, 4));
+    download(JSON.stringify(model.getServos(), null, 4), "save.json", "application/json");
+}
+
+function download(data, filename, type) {
+    const file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        const a = document.createElement("a"),
+            url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
 }
