@@ -194,4 +194,20 @@ class View {
             this.servoCards.delete(key);
         });
     }
+
+    addMacro(macro) {
+        const macroCard = document.createElement("div");
+        macroCard.className = "card";
+
+        const header = document.createElement("h1");
+        header.textContent = macro.name;
+        macroCard.appendChild(header);
+
+        const playButton = document.createElement("button");
+        playButton.textContent = "Play";
+        playButton.addEventListener("click", (_) => macro.run());
+        macroCard.appendChild(playButton);
+
+        document.getElementById("macros").appendChild(macroCard);
+    }
 }

@@ -7,6 +7,7 @@ const view = new View();
 model.loggerCallback = view.log;
 
 let nextServo = 0;
+let nextMacro = 0;
 let lastUpdate = Date.now();
 
 window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
@@ -92,4 +93,19 @@ function download(data, filename, type) {
             window.URL.revokeObjectURL(url);
         }, 0);
     }
+}
+
+function addMacro() {
+    const macro = new Macro(`Macro ${nextMacro++}`);
+    macro.actions.push(new Action(0, 0, 0));
+    macro.actions.push(new Action(1, 255, 1000));
+    macro.actions.push(new Action(0, 128, 0));
+    macro.actions.push(new Action(1, 128, 1000));
+    macro.actions.push(new Action(0, 255, 0));
+    macro.actions.push(new Action(1, 120, 100));
+    macro.actions.push(new Action(1, 110, 100));
+    macro.actions.push(new Action(1, 100, 100));
+    macro.actions.push(new Action(1, 90, 100));
+    model.addMacro(macro);
+    view.addMacro(macro);
 }

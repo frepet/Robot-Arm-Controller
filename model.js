@@ -1,6 +1,6 @@
 class Servo {
     address = 0;
-    pwm = 127;
+    _pwm = 127;
     endpoints = [0, 255];
     axisSpeed = 1;
     axis = null;
@@ -15,7 +15,7 @@ class Servo {
 
     static fromJSON({address, pwm, endpoints, speed, axis}) {
         let servo = new Servo(address, axis);
-        servo.pwm = pwm;
+        servo._pwm = pwm;
         servo.endpoints = endpoints;
         servo.speed = speed;
         return servo;
@@ -23,7 +23,15 @@ class Servo {
 
     move(val) {
         this.pwm += val;
-        this.pwm = this.pwm > this.endpoints[1] ? this.endpoints[1] : this.pwm < this.endpoints[0] ? this.endpoints[0] : this.pwm;
+    }
+
+    set pwm(pwm) {
+        this._pwm = pwm;
+        this._pwm = Math.min(Math.max(this._pwm, this.endpoints[0]), this.endpoints[1]);
+    }
+
+    get pwm() {
+        return this._pwm;
     }
 
     set min(min){
@@ -39,8 +47,46 @@ class Servo {
     }
 }
 
+class Action {
+    address;
+    pwm;
+    delay;
+
+    constructor(address, pwm, delay) {
+        this.address = address;
+        this.pwm = pwm;
+        this.delay = delay;
+    }
+}
+
+class Macro {
+    name;
+    actions = [];
+    model;
+
+    constructor(name) {
+        this.name = name;
+    }
+
+    play(i) {
+        if(i > this.actions.length-1) {
+            console.log("End of macro: ", this);
+            return;
+        }
+        this.model.setServo(this.actions[i].address, this.actions[i].pwm);
+        setTimeout(() => {this.play(i+1)}, this.actions[i].delay);
+    }
+
+    run() {
+        console.log("Running macro:", this);
+        this.model.setServo(this.actions[0].address, this.actions[0].pwm);
+        this.play(0);
+    }
+}
+
 class Model {
     servos = [];
+    macros = [];
     socket = null;
     loggerCallback = console.log;
 
@@ -94,5 +140,14 @@ class Model {
 
     clearServos() {
         this.servos = [];
+    }
+
+    addMacro(macro) {
+        macro.model = this;
+        this.macros.push(macro);
+    }
+
+    setServo(address, pwm) {
+        this.servos[address].pwm = pwm;
     }
 }

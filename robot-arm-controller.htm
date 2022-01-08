@@ -13,6 +13,7 @@
     <button onclick="document.getElementById('file-selector').click();">Load</button>
     <input onclick="saveListener();" type="button" value="Save"/>
     <input onclick="addServoListener();" type="button" value="Add Servo"/>
+    <input onclick="addMacro();" type="button" value="Add Macro"/>
 </div>
 <div class="card-container">
     <div class="card" id="gamepad">
@@ -21,8 +22,8 @@
         <div id="gamepad-axes"></div>
     </div>
 </div>
-<div class="card-container" id="servos">
-</div>
+<div class="card-container" id="servos"></div>
+<div class="card-container" id="macros"></div>
 <div class="card" id="logger"></div>
 </body>
 <script src="view.js" type="text/javascript"></script>
