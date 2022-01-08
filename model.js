@@ -1,3 +1,7 @@
+function clamp(val, min, max) {
+    return Math.min(Math.max(val, min), max);
+}
+
 class Servo {
     address = 0;
     _pwm = 127;
@@ -26,8 +30,7 @@ class Servo {
     }
 
     set pwm(pwm) {
-        this._pwm = pwm;
-        this._pwm = Math.min(Math.max(this._pwm, this.endpoints[0]), this.endpoints[1]);
+        this._pwm = clamp(pwm, this.endpoints[0], this.endpoints[1]);
     }
 
     get pwm() {
@@ -35,15 +38,13 @@ class Servo {
     }
 
     set min(min){
-        this.endpoints[0] = min;
-        this.endpoints[0] = this.endpoints[0] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[0] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[0];
-        this.endpoints[0] = Math.round(this.endpoints[0])
+        this.endpoints[0] = Math.min(min, this.endpoints[1]);
+        this.pwm += 0; // Will clamp the pwm value
     }
 
     set max(max){
-        this.endpoints[1] = max;
-        this.endpoints[1] = this.endpoints[1] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[1] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[1];
-        this.endpoints[1] = Math.round(this.endpoints[1])
+        this.endpoints[1] = Math.max(max, this.endpoints[0]);
+        this.pwm += 0; // Will clamp the pwm value
     }
 }
 
