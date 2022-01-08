@@ -112,7 +112,7 @@ body {
     flex-direction: column;
 }
 
-.servo-row {
+.row {
     display: flex;
     justify-content: space-between;
 }
@@ -126,7 +126,7 @@ body {
     cursor: pointer;
 }
 
-.servo-row .dropdown {
+.row .dropdown {
     width: 3rem;
 }
 
@@ -149,6 +149,6 @@ body {
     margin: 0;
 }
 
-.add-action-row input {
-    width: 7rem;
+.action-row input {
+    width: 3rem;
 }

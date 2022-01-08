@@ -11,7 +11,7 @@ let nextMacro = 0;
 let lastUpdate = Date.now();
 
 window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
-document.getElementById("file-selector").addEventListener('change', onLoadListener);
+document.getElementById("file-selector").addEventListener('change', load);
 window.requestAnimationFrame(updateStatus);
 
 function addGamepad(gamepad_) {
@@ -50,11 +50,11 @@ function addServo(savedData = null) {
     nextServo++;
 }
 
-function connectListener() {
+function connect() {
     model.connect("localhost", "8765");
 }
 
-function onLoadListener(event) {
+function load(event) {
     model.clearServos();
     model.clearMacros();
     view.clearServos();
@@ -68,17 +68,17 @@ function onLoadListener(event) {
         return;
     }
     const reader = new FileReader();
-    reader.addEventListener('loadend', _ => load(reader.result));
+    reader.addEventListener('loadend', _ => loadSave(reader.result));
     reader.readAsText(file);
 }
 
-function load(data) {
+function loadSave(data) {
     let json = JSON.parse(data);
     json.servos.forEach(servo => addServo(servo));
     json.macros.forEach(macro => addMacro(macro));
 }
 
-function saveListener() {
+function save() {
     download(JSON.stringify({
         "servos": model.servos,
         "macros": model.macros

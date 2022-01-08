@@ -70,28 +70,36 @@ class Action {
 class Macro {
     name = "";
     actions = [];
+    running = false;
+    button = null;
 
     constructor(name) {
         this.name = name;
     }
 
-    static fromJSON({name, actions}) {
+    static fromJSON({name, actions, button}) {
         let macro = new Macro(name);
         macro.actions = actions;
+        macro.button = button;
         return macro;
     }
 
     play(i) {
         if (i > this.actions.length - 1) {
+            this.running = false;
             return;
         }
         model.setServo(this.actions[i].address, this.actions[i].pwm);
         setTimeout(() => {
             this.play(i + 1)
-        }, this.actions[i].delay);
+        }, this.actions[i].delay * 1000);
     }
 
     run() {
+        if (this.running) {
+            return;
+        }
+        this.running = true;
         this.play(0);
     }
 
@@ -127,21 +135,32 @@ class Model {
     }
 
     update(delta, gamepad) {
-        this.servos.forEach((servo) => {
+        this.servos.forEach(servo => {
                 if (!gamepad) {
                     return;
                 }
-                if (servo.axis != null && gamepad.axes[servo.axis] != null) {
+                if (servo.axis !== null && gamepad.axes[servo.axis] !== null) {
                     servo.move(gamepad.axes[servo.axis] * servo.axisSpeed * delta);
                 }
-                if (servo.buttonAdd != null && gamepad.buttons[servo.buttonAdd] != null) {
+                if (servo.buttonAdd !== null && gamepad.buttons[servo.buttonAdd] !== null) {
                     servo.move(gamepad.buttons[servo.buttonAdd].value * servo.buttonSpeed * delta);
                 }
-                if (servo.buttonRemove != null && gamepad.buttons[servo.buttonRemove] != null) {
+                if (servo.buttonRemove !== null && gamepad.buttons[servo.buttonRemove] !== null) {
                     servo.move(-gamepad.buttons[servo.buttonRemove].value * servo.buttonSpeed * delta);
                 }
             }
         );
+
+        this.macros.forEach(macro => {
+           if (!gamepad) {
+               return;
+           }
+           if (macro.button !== null && gamepad.buttons[macro.button] !== null) {
+               if (gamepad.buttons[macro.button].pressed) {
+                   macro.run();
+               }
+           }
+        });
 
         this.sendPWMs();
     }

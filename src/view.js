@@ -101,7 +101,7 @@ class View {
 
     _createSliderRow(name, min, max, value, step, callback, update) {
         const div = document.createElement("div");
-        div.className = "sliderDiv servo-row";
+        div.className = "sliderDiv row";
         const label = document.createElement("label");
         label.textContent = name + ": ";
         const val = document.createElement("label");
@@ -123,7 +123,7 @@ class View {
 
     _createInputRow(name, min, max, value, step, callback) {
         const div = document.createElement("div");
-        div.className = "servo-row";
+        div.className = "row";
         const label = document.createElement("label");
         label.textContent = name;
         const input = document.createElement("input");
@@ -142,7 +142,7 @@ class View {
 
     _createDropdownRow(name, inputs, typeName, value, callback) {
         const div = document.createElement("div");
-        div.className = "servo-row";
+        div.className = "row";
         const label = document.createElement("label");
         label.textContent = name;
         const input = document.createElement("select");
@@ -200,14 +200,20 @@ class View {
         const macroCard = document.createElement("div");
         macroCard.className = "card";
 
-        const header = document.createElement("h1");
-        header.textContent = macro.name;
+        const header = document.createElement("div");
+        header.className = "row";
         macroCard.appendChild(header);
+
+        const title = document.createElement("h1");
+        title.textContent = macro.name;
+        header.appendChild(title);
 
         const playButton = document.createElement("button");
         playButton.textContent = "Play";
         playButton.addEventListener("click", (_) => macro.run());
-        macroCard.appendChild(playButton);
+        header.appendChild(playButton);
+
+        macroCard.appendChild(this._createDropdownRow("Button:", gamepad.buttons, "Button", null, button => macro.button = button));
 
         const actions = document.createElement("div");
         actions.className = "actions";
@@ -225,6 +231,12 @@ class View {
         document.getElementById("macros").appendChild(macroCard);
     }
 
+    _createLabel(text) {
+        const label = document.createElement("label");
+        label.textContent = text;
+        return label;
+    }
+
     _addActionRow(macro, loadedAction = null) {
         let action;
         if (loadedAction === null) {
@@ -235,8 +247,9 @@ class View {
         }
 
         const row = document.createElement("div");
-        row.className = "add-action-row";
+        row.className = "action-row";
 
+        row.appendChild(this._createLabel("Address: "));
         const address = document.createElement("input");
         address.type = "number";
         address.placeholder = "Address";
@@ -245,6 +258,7 @@ class View {
         address.addEventListener('input', (event) => action.address = event.target.value)
         row.appendChild(address);
 
+        row.appendChild(this._createLabel("Value: "));
         const pwm = document.createElement("input");
         pwm.type = "number";
         pwm.placeholder = "Value (0-255)";
@@ -254,6 +268,7 @@ class View {
         pwm.addEventListener('input', (event) => action.pwm = event.target.value)
         row.appendChild(pwm);
 
+        row.appendChild(this._createLabel("Delay (s): "));
         const delay = document.createElement("input");
         delay.type = "number";
         delay.placeholder = "Delay (s)";
