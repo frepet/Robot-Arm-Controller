@@ -12,16 +12,16 @@ class Servo {
     buttonAdd = null;
     buttonRemove = null;
 
-    constructor(address, axis) {
+    constructor(address) {
         this.address = address
-        this.axis = axis
     }
 
     static fromJSON({address, _pwm, endpoints, axisSpeed, axis, buttonSpeed, buttonAdd, buttonRemove}) {
-        let servo = new Servo(address, axis);
+        let servo = new Servo(address);
         servo._pwm = _pwm;
         servo.endpoints = endpoints;
-        servo.axisSpeed= axisSpeed;
+        servo.axisSpeed = axisSpeed;
+        servo.axis = axis;
         servo.buttonSpeed = buttonSpeed;
         servo.buttonAdd = buttonAdd;
         servo.buttonRemove = buttonRemove;
@@ -82,11 +82,13 @@ class Macro {
     }
 
     play(i) {
-        if(i > this.actions.length-1) {
+        if (i > this.actions.length - 1) {
             return;
         }
         model.setServo(this.actions[i].address, this.actions[i].pwm);
-        setTimeout(() => {this.play(i+1)}, this.actions[i].delay);
+        setTimeout(() => {
+            this.play(i + 1)
+        }, this.actions[i].delay);
     }
 
     run() {
@@ -129,15 +131,15 @@ class Model {
                 if (!gamepad) {
                     return;
                 }
-                if(servo.axis != null && gamepad.axes[servo.axis] != null){
+                if (servo.axis != null && gamepad.axes[servo.axis] != null) {
                     servo.move(gamepad.axes[servo.axis] * servo.axisSpeed * delta);
-                }   
-                if(servo.buttonAdd != null && gamepad.buttons[servo.buttonAdd] != null){
+                }
+                if (servo.buttonAdd != null && gamepad.buttons[servo.buttonAdd] != null) {
                     servo.move(gamepad.buttons[servo.buttonAdd].value * servo.buttonSpeed * delta);
-                }  
-                if(servo.buttonRemove != null && gamepad.buttons[servo.buttonRemove] != null){
+                }
+                if (servo.buttonRemove != null && gamepad.buttons[servo.buttonRemove] != null) {
                     servo.move(-gamepad.buttons[servo.buttonRemove].value * servo.buttonSpeed * delta);
-                }               
+                }
             }
         );
 
@@ -147,7 +149,10 @@ class Model {
     connect(address, port) {
         const socket = new WebSocket(`ws://${address}:${port}`);
         socket.addEventListener('open', _ => this.onSocketOpen(socket));
-        socket.addEventListener('close', (_) => {this.socket = null; this.loggerCallback("Disconnected!")});
+        socket.addEventListener('close', (_) => {
+            this.socket = null;
+            this.loggerCallback("Disconnected!")
+        });
         socket.addEventListener('message', ({data}) => this.loggerCallback(data));
     }
 

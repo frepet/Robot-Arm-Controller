@@ -38,10 +38,10 @@ function updateStatus() {
     window.requestAnimationFrame(updateStatus);
 }
 
-function addServoListener(savedData = null) {
+function addServo(savedData = null) {
     let servo;
     if (savedData === null) {
-        servo = new Servo(nextServo, 0);
+        servo = new Servo(nextServo, null);
     } else {
         servo = Servo.fromJSON(savedData);
     }
@@ -74,12 +74,15 @@ function onLoadListener(event) {
 
 function load(data) {
     let json = JSON.parse(data);
-    json.servos.forEach(servo => addServoListener(servo));
+    json.servos.forEach(servo => addServo(servo));
     json.macros.forEach(macro => addMacro(macro));
 }
 
 function saveListener() {
-    download(JSON.stringify({"servos": model.servos, "macros": model.macros}, null, 4), "save.json", "application/json");
+    download(JSON.stringify({
+        "servos": model.servos,
+        "macros": model.macros
+    }, null, 4), "save.json", "application/json");
 }
 
 function download(data, filename, type) {

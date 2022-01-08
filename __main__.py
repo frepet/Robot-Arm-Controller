@@ -7,17 +7,16 @@ import websockets
 import json
 
 com_port = None
-com_rate = None
+com_rate = 19200
 socket_port = None
 ser = None
 
 
 try:
 	com_port = sys.argv[1]
-	com_rate = sys.argv[2]
-	socket_port = sys.argv[3]
+	socket_port = sys.argv[2]
 except IndexError as ex:
-	print(f"USAGE: {sys.argv[0]} COM_PORT BAUD_RATE SOCKET_PORT", file=sys.stderr)
+	print(f"USAGE: {sys.argv[0]} COM_PORT SOCKET_PORT", file=sys.stderr)
 	exit(1)
 
 

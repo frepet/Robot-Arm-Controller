@@ -37,7 +37,7 @@ class View {
     }
 
     addServoCard(servo, gamepad) {
-        this.servoCards.set(servo.address.toString(),this._createServoCard(servo, gamepad));
+        this.servoCards.set(servo.address.toString(), this._createServoCard(servo, gamepad));
     }
 
     _createServoCard(servo, gamepad) {
@@ -55,19 +55,19 @@ class View {
         header.textContent = `Servo ${servoDiv.servoAddress}`;
         headerDiv.appendChild(header);
 
-        const pwmUpdate = (input, value, { pwm }) => {
-            input.value = pwm;
+        const pwmUpdate = (input, value, {pwm}) => {
+            input.value = pwm.toString();
             value.textContent = Math.round(pwm).toString();
         }
         const pwmDiv = this._createSliderRow("PWM", 0, 255, servo.pwm, 1, (pwm) => servo.pwm = pwm, pwmUpdate);
 
-        const minUpdate = (input, value, { endpoints }) => {
+        const minUpdate = (input, value, {endpoints}) => {
             input.value = endpoints[0];
             value.textContent = endpoints[0];
         }
         const minDiv = this._createSliderRow("Min", 0, 255, servo.min, 1, (min) => servo.min = min, minUpdate);
 
-        const maxUpdate = (input, value, { endpoints }) => {
+        const maxUpdate = (input, value, {endpoints}) => {
             input.value = endpoints[1];
             value.textContent = endpoints[1];
         }
@@ -82,7 +82,9 @@ class View {
         servoDiv.appendChild(maxDiv);
 
         servoDiv.appendChild(axisSpeedDiv);
-        servoDiv.appendChild(this._createDropdownRow("Axis", gamepad.axes, "Axis", parseInt(servo.axis), (axis) => {servo.axis = axis}));
+        servoDiv.appendChild(this._createDropdownRow("Axis", gamepad.axes, "Axis", parseInt(servo.axis), (axis) => {
+            servo.axis = axis
+        }));
 
         servoDiv.appendChild(buttonSpeedDiv);
         servoDiv.appendChild(this._createDropdownRow("Button +", gamepad.buttons, "Button", parseInt(servo.buttonAdd), (buttonAdd) => servo.buttonAdd = buttonAdd));
@@ -97,18 +99,6 @@ class View {
         return document.getElementById("servos").appendChild(servoDiv);
     }
 
-    /**
-     *  Creates a slider row for a servo card.
-     * @param name Name of the slider
-     * @param min Min value
-     * @param max Max value
-     * @param value Initial value
-     * @param step Step size
-     * @param callback Call this function when the slider is changed by user
-     * @param update This function is called when model updates
-     * @returns {HTMLDivElement} The slider row as a div-element.
-     * @private
-     */
     _createSliderRow(name, min, max, value, step, callback, update) {
         const div = document.createElement("div");
         div.className = "sliderDiv servo-row";
@@ -117,10 +107,10 @@ class View {
         const val = document.createElement("label");
         const input = document.createElement("input");
         input.type = "range";
-        input.min = min;
-        input.max = max;
-        input.value = val;
-        input.step = step;
+        input.min = min.toString();
+        input.max = max.toString();
+        input.value = val.toString();
+        input.step = step.toString();
         input.oninput = () => callback(parseInt(input.value));
         val.textContent = input.value.toString();
 
@@ -131,7 +121,7 @@ class View {
         return div;
     }
 
-    _createInputRow(name, min, max, value, step, callback){
+    _createInputRow(name, min, max, value, step, callback) {
         const div = document.createElement("div");
         div.className = "servo-row";
         const label = document.createElement("label");
@@ -139,10 +129,10 @@ class View {
         const input = document.createElement("input");
         input.className = "dropdown";
         input.type = "number";
-        input.min = min;
-        input.max = max;
-        input.value = value;
-        input.step = step
+        input.min = min.toString();
+        input.max = max.toString();
+        input.value = value.toString();
+        input.step = step.toString();
         input.addEventListener('input', (event) => callback(event.target.value));
 
         div.appendChild(label);
@@ -161,7 +151,7 @@ class View {
         option = document.createElement("option");
 
         option.value = null;
-        option.text = "No selected";
+        option.text = "Unbound";
         option.selected = true;
         input.appendChild(option);
 
@@ -175,7 +165,7 @@ class View {
             input.appendChild(option);
         }
 
-        input.onchange = (ev)=>{
+        input.onchange = (ev) => {
             const value = ev.target.options[ev.target.selectedIndex].value;
             callback(value);
         }
@@ -228,7 +218,9 @@ class View {
         addButton.addEventListener("click", (_) => actionsRef.appendChild(this._addActionRow(macro)));
         macroCard.appendChild(addButton);
 
-        macro.actions.forEach(action => {actionsRef.appendChild(this._addActionRow(macro, action))});
+        macro.actions.forEach(action => {
+            actionsRef.appendChild(this._addActionRow(macro, action))
+        });
 
         document.getElementById("macros").appendChild(macroCard);
     }
