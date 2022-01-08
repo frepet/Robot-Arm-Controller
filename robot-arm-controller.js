@@ -21,7 +21,7 @@ function addGamepad(gamepad_) {
 
 function updateStatus() {
     model.update(Date.now() - lastUpdate, gamepad);
-    view.update(model.getServos());
+    view.update(model.servos);
     lastUpdate = Date.now();
 
     if (gamepad) {
@@ -41,13 +41,13 @@ function updateStatus() {
 function addServoListener(savedData = null) {
     let servo;
     if (savedData === null) {
-        servo = new Servo(nextServo++, 0);
+        servo = new Servo(nextServo, 0);
     } else {
         servo = Servo.fromJSON(savedData);
-        nextServo++;
     }
-    view.addServoCard(servo,gamepad);
+    view.addServoCard(servo, gamepad);
     model.addServo(servo);
+    nextServo++;
 }
 
 function connectListener() {
@@ -56,8 +56,11 @@ function connectListener() {
 
 function onLoadListener(event) {
     model.clearServos();
+    model.clearMacros();
     view.clearServos();
+    view.clearMacros();
     nextServo = 0;
+    nextMacro = 0;
 
     const file = event.target.files[0];
     if (file.type !== "application/json") {
@@ -65,16 +68,18 @@ function onLoadListener(event) {
         return;
     }
     const reader = new FileReader();
-    reader.addEventListener('loadend', _ => load(JSON.parse(reader.result.toString())));
+    reader.addEventListener('loadend', _ => load(reader.result));
     reader.readAsText(file);
 }
 
-function load(saveData) {
-    saveData.forEach(servo => addServoListener(servo));
+function load(data) {
+    let json = JSON.parse(data);
+    json.servos.forEach(servo => addServoListener(servo));
+    json.macros.forEach(macro => addMacro(macro));
 }
 
 function saveListener() {
-    download(JSON.stringify(model.getServos(), null, 4), "save.json", "application/json");
+    download(JSON.stringify({"servos": model.servos, "macros": model.macros}, null, 4), "save.json", "application/json");
 }
 
 function download(data, filename, type) {
@@ -95,17 +100,14 @@ function download(data, filename, type) {
     }
 }
 
-function addMacro() {
-    const macro = new Macro(`Macro ${nextMacro++}`);
-    macro.actions.push(new Action(0, 0, 0));
-    macro.actions.push(new Action(1, 255, 1000));
-    macro.actions.push(new Action(0, 128, 0));
-    macro.actions.push(new Action(1, 128, 1000));
-    macro.actions.push(new Action(0, 255, 0));
-    macro.actions.push(new Action(1, 120, 100));
-    macro.actions.push(new Action(1, 110, 100));
-    macro.actions.push(new Action(1, 100, 100));
-    macro.actions.push(new Action(1, 90, 100));
+function addMacro(savedData = null) {
+    let macro;
+    if (savedData === null) {
+        macro = new Macro(`Macro ${nextMacro++}`);
+    } else {
+        macro = Macro.fromJSON(savedData);
+        nextMacro++;
+    }
     model.addMacro(macro);
     view.addMacro(macro);
 }

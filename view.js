@@ -40,7 +40,11 @@ class View {
         this.servoCards.set(servo.address.toString(),this._createServoCard(servo, gamepad));
     }
 
-    _createServoCard(servo,gamepad) {
+    _createServoCard(servo, gamepad) {
+        if (!gamepad) {
+            this.log("Activate controller first!");
+            throw new Error("Create servo card without controller");
+        }
         const servoDiv = document.createElement("div");
         servoDiv.className = "servo card";
         servoDiv.servoAddress = servo.address;
@@ -78,11 +82,11 @@ class View {
         servoDiv.appendChild(maxDiv);
 
         servoDiv.appendChild(axisSpeedDiv);
-        servoDiv.appendChild(this._createDropdownRow("Axis", gamepad.axes, "Axis", servo.axis, (axis) => {servo.axis = axis}));
+        servoDiv.appendChild(this._createDropdownRow("Axis", gamepad.axes, "Axis", parseInt(servo.axis), (axis) => {servo.axis = axis}));
 
         servoDiv.appendChild(buttonSpeedDiv);
-        servoDiv.appendChild(this._createDropdownRow("Button +", gamepad.buttons, "Button", servo.buttonAdd, (buttonAdd) => servo.buttonAdd = buttonAdd));
-        servoDiv.appendChild(this._createDropdownRow("Button -", gamepad.buttons, "Button", servo.buttonRemove, (buttonRemove) => servo.buttonRemove = buttonRemove));
+        servoDiv.appendChild(this._createDropdownRow("Button +", gamepad.buttons, "Button", parseInt(servo.buttonAdd), (buttonAdd) => servo.buttonAdd = buttonAdd));
+        servoDiv.appendChild(this._createDropdownRow("Button -", gamepad.buttons, "Button", parseInt(servo.buttonRemove), (buttonRemove) => servo.buttonRemove = buttonRemove));
 
         servoDiv.update = (servo) => {
             pwmDiv.update(servo);
@@ -146,14 +150,14 @@ class View {
         return div;
     }
 
-    _createDropdownRow(name,inputs, typeName, value, callback) {
+    _createDropdownRow(name, inputs, typeName, value, callback) {
         const div = document.createElement("div");
         div.className = "servo-row";
         const label = document.createElement("label");
         label.textContent = name;
         const input = document.createElement("select");
 
-        var option;  
+        let option;
         option = document.createElement("option");
 
         option.value = null;
@@ -163,9 +167,9 @@ class View {
 
         for (let i = 0; i < inputs.length; i++) {
             option = document.createElement("option");
-            option.value = i;
+            option.value = i.toString();
             option.text = typeName + ": " + i;
-            if(value == i){
+            if (value === i) {
                 option.selected = true;
             }
             input.appendChild(option);
@@ -195,6 +199,13 @@ class View {
         });
     }
 
+    clearMacros() {
+        const macros = document.getElementById("macros").childNodes;
+        while (macros.length > 0) {
+            macros.item(0).remove();
+        }
+    }
+
     addMacro(macro) {
         const macroCard = document.createElement("div");
         macroCard.className = "card";
@@ -208,6 +219,58 @@ class View {
         playButton.addEventListener("click", (_) => macro.run());
         macroCard.appendChild(playButton);
 
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        const actionsRef = macroCard.appendChild(actions);
+
+        const addButton = document.createElement("button");
+        addButton.textContent = "+";
+        addButton.addEventListener("click", (_) => actionsRef.appendChild(this._addActionRow(macro)));
+        macroCard.appendChild(addButton);
+
+        macro.actions.forEach(action => {actionsRef.appendChild(this._addActionRow(macro, action))});
+
         document.getElementById("macros").appendChild(macroCard);
+    }
+
+    _addActionRow(macro, loadedAction = null) {
+        let action;
+        if (loadedAction === null) {
+            action = new Action(0, 0, 0);
+            macro.add(action);
+        } else {
+            action = loadedAction;
+        }
+
+        const row = document.createElement("div");
+        row.className = "add-action-row";
+
+        const address = document.createElement("input");
+        address.type = "number";
+        address.placeholder = "Address";
+        address.min = "0";
+        address.value = action.address.toString();
+        address.addEventListener('input', (event) => action.address = event.target.value)
+        row.appendChild(address);
+
+        const pwm = document.createElement("input");
+        pwm.type = "number";
+        pwm.placeholder = "Value (0-255)";
+        pwm.min = "0";
+        pwm.max = "255";
+        pwm.value = action.pwm.toString();
+        pwm.addEventListener('input', (event) => action.pwm = event.target.value)
+        row.appendChild(pwm);
+
+        const delay = document.createElement("input");
+        delay.type = "number";
+        delay.placeholder = "Delay (s)";
+        delay.min = "0";
+        delay.step = "0.1";
+        delay.value = action.delay.toString();
+        delay.addEventListener('input', (event) => action.delay = event.target.value)
+        row.appendChild(delay);
+
+        return row;
     }
 }

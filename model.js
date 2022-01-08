@@ -17,11 +17,14 @@ class Servo {
         this.axis = axis
     }
 
-    static fromJSON({address, pwm, endpoints, speed, axis}) {
+    static fromJSON({address, _pwm, endpoints, axisSpeed, axis, buttonSpeed, buttonAdd, buttonRemove}) {
         let servo = new Servo(address, axis);
-        servo._pwm = pwm;
+        servo._pwm = _pwm;
         servo.endpoints = endpoints;
-        servo.speed = speed;
+        servo.axisSpeed= axisSpeed;
+        servo.buttonSpeed = buttonSpeed;
+        servo.buttonAdd = buttonAdd;
+        servo.buttonRemove = buttonRemove;
         return servo;
     }
 
@@ -37,12 +40,12 @@ class Servo {
         return this._pwm;
     }
 
-    set min(min){
+    set min(min) {
         this.endpoints[0] = Math.min(min, this.endpoints[1]);
         this.pwm += 0; // Will clamp the pwm value
     }
 
-    set max(max){
+    set max(max) {
         this.endpoints[1] = Math.max(max, this.endpoints[0]);
         this.pwm += 0; // Will clamp the pwm value
     }
@@ -58,30 +61,40 @@ class Action {
         this.pwm = pwm;
         this.delay = delay;
     }
+
+    static fromJSON({address, pwm, delay}) {
+        return new Action(address, pwm, delay);
+    }
 }
 
 class Macro {
-    name;
+    name = "";
     actions = [];
-    model;
 
     constructor(name) {
         this.name = name;
     }
 
+    static fromJSON({name, actions}) {
+        let macro = new Macro(name);
+        macro.actions = actions;
+        return macro;
+    }
+
     play(i) {
         if(i > this.actions.length-1) {
-            console.log("End of macro: ", this);
             return;
         }
-        this.model.setServo(this.actions[i].address, this.actions[i].pwm);
+        model.setServo(this.actions[i].address, this.actions[i].pwm);
         setTimeout(() => {this.play(i+1)}, this.actions[i].delay);
     }
 
     run() {
-        console.log("Running macro:", this);
-        this.model.setServo(this.actions[0].address, this.actions[0].pwm);
         this.play(0);
+    }
+
+    add(action) {
+        this.actions.push(action);
     }
 }
 
@@ -93,6 +106,22 @@ class Model {
 
     addServo(servo) {
         this.servos.push(servo);
+    }
+
+    clearServos() {
+        this.servos = [];
+    }
+
+    setServo(address, pwm) {
+        this.servos[address].pwm = pwm;
+    }
+
+    addMacro(macro) {
+        this.macros.push(macro);
+    }
+
+    clearMacros() {
+        this.macros = [];
     }
 
     update(delta, gamepad) {
@@ -115,10 +144,6 @@ class Model {
         this.sendPWMs();
     }
 
-    getServos() {
-        return this.servos;
-    }
-
     connect(address, port) {
         const socket = new WebSocket(`ws://${address}:${port}`);
         socket.addEventListener('open', _ => this.onSocketOpen(socket));
@@ -137,18 +162,5 @@ class Model {
             this.servos.forEach(({address, pwm}) => data["servos"][address] = Math.round(pwm));
             this.socket.send(JSON.stringify(data));
         }
-    }
-
-    clearServos() {
-        this.servos = [];
-    }
-
-    addMacro(macro) {
-        macro.model = this;
-        this.macros.push(macro);
-    }
-
-    setServo(address, pwm) {
-        this.servos[address].pwm = pwm;
     }
 }

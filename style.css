@@ -29,7 +29,7 @@ body {
 
 .card h1 {
     font-size: 1rem;
-    margin: auto 0 0 0;
+    margin: 0.1rem;
 }
 
 .card input {
@@ -147,4 +147,8 @@ body {
 
 #logger p {
     margin: 0;
+}
+
+.add-action-row input {
+    width: 7rem;
 }
