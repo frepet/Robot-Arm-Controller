@@ -113,6 +113,7 @@ class Model {
     macros = [];
     socket = null;
     loggerCallback = console.log;
+    deadzone = 0.2;
 
     addServo(servo) {
         this.servos.push(servo);
@@ -140,7 +141,10 @@ class Model {
                     return;
                 }
                 if (servo.axis != null && gamepad.axes[servo.axis] != null) {
-                    servo.move(gamepad.axes[servo.axis] * servo.axisSpeed * delta);
+                    const input = gamepad.axes[servo.axis];
+                    if (Math.abs(input) > this.deadzone) {
+                        servo.move(input * servo.axisSpeed * delta);
+                    }
                 }
                 if (servo.buttonAdd != null && gamepad.buttons[servo.buttonAdd] != null) {
                     servo.move(gamepad.buttons[servo.buttonAdd].value * servo.buttonSpeed * delta);
