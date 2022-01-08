@@ -2,8 +2,11 @@ class Servo {
     address = 0;
     pwm = 127;
     endpoints = [0, 255];
-    speed = 1;
+    axisSpeed = 1;
     axis = null;
+    buttonSpeed = 0.1;
+    buttonAdd = null;
+    buttonRemove = null;
 
     constructor(address, axis) {
         this.address = address
@@ -23,10 +26,6 @@ class Servo {
         this.pwm = this.pwm > this.endpoints[1] ? this.endpoints[1] : this.pwm < this.endpoints[0] ? this.endpoints[0] : this.pwm;
     }
 
-    set pwm(pwm){
-        this.pwm = pwm;
-    }
-
     set min(min){
         this.endpoints[0] = min;
         this.endpoints[0] = this.endpoints[0] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[0] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[0];
@@ -37,10 +36,6 @@ class Servo {
         this.endpoints[1] = max;
         this.endpoints[1] = this.endpoints[1] > this.endpoints[1] ? this.endpoints[1] : this.endpoints[1] < this.endpoints[0] ? this.endpoints[0] : this.endpoints[1];
         this.endpoints[1] = Math.round(this.endpoints[1])
-    }
-
-    set speed(speed) {
-        this.speed = speed;
     }
 }
 
@@ -55,13 +50,18 @@ class Model {
 
     update(delta, gamepad) {
         this.servos.forEach((servo) => {
-                if (servo.axis === null) {
+                if (!gamepad) {
                     return;
                 }
-                if (!gamepad || gamepad.axes[servo.axis] === null) {
-                    return;
-                }
-                servo.move(gamepad.axes[servo.axis] * servo.speed * delta);
+                if(servo.axis != null && gamepad.axes[servo.axis] != null){
+                    servo.move(gamepad.axes[servo.axis] * servo.axisSpeed * delta);
+                }   
+                if(servo.buttonAdd != null && gamepad.buttons[servo.buttonAdd] != null){
+                    servo.move(gamepad.buttons[servo.buttonAdd].value * servo.buttonSpeed * delta);
+                }  
+                if(servo.buttonRemove != null && gamepad.buttons[servo.buttonRemove] != null){
+                    servo.move(-gamepad.buttons[servo.buttonRemove].value * servo.buttonSpeed * delta);
+                }               
             }
         );
 

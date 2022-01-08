@@ -45,33 +45,7 @@ function addServoListener(savedData = null) {
         servo = Servo.fromJSON(savedData);
         nextServo++;
     }
-
-    function axisSelectCallback(newAxis) {
-        servo.axis = newAxis
-    }
-
-    function pwmCallback(pwm) {
-        servo.pwm = pwm;
-    }
-
-    function minCallback(min) {
-        servo.min = min;
-    }
-
-    function maxCallback(max) {
-        servo.max = max;
-    }
-
-    function speedCallback(speed) {
-        servo.speed = speed;
-    }
-
-    view.addServoCard(servo,
-        axisSelectCallback,
-        pwmCallback,
-        minCallback,
-        maxCallback,
-        speedCallback);
+    view.addServoCard(servo,gamepad);
     model.addServo(servo);
 }
 

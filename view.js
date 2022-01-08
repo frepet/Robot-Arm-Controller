@@ -36,11 +36,11 @@ class View {
         }
     }
 
-    addServoCard(servo, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
-        this.servoCards.set(servo.address.toString(),this._createServoCard(servo, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback));
+    addServoCard(servo, gamepad) {
+        this.servoCards.set(servo.address.toString(),this._createServoCard(servo, gamepad));
     }
 
-    _createServoCard(servo, axisSelectCallback, pwmCallback, minCallback, maxCallback, speedCallback) {
+    _createServoCard(servo,gamepad) {
         const servoDiv = document.createElement("div");
         servoDiv.className = "servo card";
         servoDiv.servoAddress = servo.address;
@@ -55,28 +55,34 @@ class View {
             input.value = pwm;
             value.textContent = Math.round(pwm).toString();
         }
-        const pwmDiv = this._createSliderRow("PWM", 0, 255, servo.pwm, 1, pwmCallback, pwmUpdate);
+        const pwmDiv = this._createSliderRow("PWM", 0, 255, servo.pwm, 1, (pwm) => servo.pwm = pwm, pwmUpdate);
 
         const minUpdate = (input, value, { endpoints }) => {
             input.value = endpoints[0];
             value.textContent = endpoints[0];
         }
-        const minDiv = this._createSliderRow("Min", 0, 255, servo.min, 1, minCallback, minUpdate);
+        const minDiv = this._createSliderRow("Min", 0, 255, servo.min, 1, (min) => servo.min = min, minUpdate);
 
         const maxUpdate = (input, value, { endpoints }) => {
             input.value = endpoints[1];
             value.textContent = endpoints[1];
         }
-        const maxDiv = this._createSliderRow("Max", 0, 255, servo.max, 1, maxCallback, maxUpdate);
+        const maxDiv = this._createSliderRow("Max", 0, 255, servo.max, 1, (max) => servo.max = max, maxUpdate);
 
-        const speedDiv = this._createDropdownRow("Speed", -5, 5, servo.speed, 0.1, speedCallback);
+        const axisSpeedDiv = this._createInputRow("Axis speed", -5, 5, servo.axisSpeed, 0.1, (axisSpeed) => servo.axisSpeed = axisSpeed);
+        const buttonSpeedDiv = this._createInputRow("Button speed", -5, 5, servo.buttonSpeed, 0.1, (buttonSpeed) => servo.buttonSpeed = buttonSpeed);
 
         servoDiv.appendChild(headerDiv);
         servoDiv.appendChild(pwmDiv);
         servoDiv.appendChild(minDiv);
         servoDiv.appendChild(maxDiv);
-        servoDiv.appendChild(speedDiv);
-        servoDiv.appendChild(this._createDropdownRow("Axis", 0, 7, servo.axis, 1, axisSelectCallback));
+
+        servoDiv.appendChild(axisSpeedDiv);
+        servoDiv.appendChild(this._createDropdownRow("Axis", gamepad.axes, "Axis", servo.axis, (axis) => {servo.axis = axis}));
+
+        servoDiv.appendChild(buttonSpeedDiv);
+        servoDiv.appendChild(this._createDropdownRow("Button +", gamepad.buttons, "Button", servo.buttonAdd, (buttonAdd) => servo.buttonAdd = buttonAdd));
+        servoDiv.appendChild(this._createDropdownRow("Button -", gamepad.buttons, "Button", servo.buttonRemove, (buttonRemove) => servo.buttonRemove = buttonRemove));
 
         servoDiv.update = (servo) => {
             pwmDiv.update(servo);
@@ -121,7 +127,7 @@ class View {
         return div;
     }
 
-    _createDropdownRow(name, min, max, value, step, callback) {
+    _createInputRow(name, min, max, value, step, callback){
         const div = document.createElement("div");
         div.className = "servo-row";
         const label = document.createElement("label");
@@ -135,6 +141,40 @@ class View {
         input.step = step
         input.addEventListener('input', (event) => callback(event.target.value));
 
+        div.appendChild(label);
+        div.appendChild(input);
+        return div;
+    }
+
+    _createDropdownRow(name,inputs, typeName, value, callback) {
+        const div = document.createElement("div");
+        div.className = "servo-row";
+        const label = document.createElement("label");
+        label.textContent = name;
+        const input = document.createElement("select");
+
+        var option;  
+        option = document.createElement("option");
+
+        option.value = null;
+        option.text = "No selected";
+        option.selected = true;
+        input.appendChild(option);
+
+        for (let i = 0; i < inputs.length; i++) {
+            option = document.createElement("option");
+            option.value = i;
+            option.text = typeName + ": " + i;
+            if(value == i){
+                option.selected = true;
+            }
+            input.appendChild(option);
+        }
+
+        input.onchange = (ev)=>{
+            const value = ev.target.options[ev.target.selectedIndex].value;
+            callback(value);
+        }
         div.appendChild(label);
         div.appendChild(input);
         return div;
