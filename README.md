@@ -15,7 +15,7 @@ creates a virtual environment before installing the dependencies.
 >pip install -r requirements.txt
 
 #### Running the backend:  
->python3 . COM_PORT BAUD_RATE SOCKET_PORT
+>python3 . COM_PORT SOCKET_PORT
 
 ### Frontend
 Open `index.htm` in Firefox (could work in other browsers).

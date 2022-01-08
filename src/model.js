@@ -139,13 +139,13 @@ class Model {
                 if (!gamepad) {
                     return;
                 }
-                if (servo.axis !== null && gamepad.axes[servo.axis] !== null) {
+                if (servo.axis != null && gamepad.axes[servo.axis] != null) {
                     servo.move(gamepad.axes[servo.axis] * servo.axisSpeed * delta);
                 }
-                if (servo.buttonAdd !== null && gamepad.buttons[servo.buttonAdd] !== null) {
+                if (servo.buttonAdd != null && gamepad.buttons[servo.buttonAdd] != null) {
                     servo.move(gamepad.buttons[servo.buttonAdd].value * servo.buttonSpeed * delta);
                 }
-                if (servo.buttonRemove !== null && gamepad.buttons[servo.buttonRemove] !== null) {
+                if (servo.buttonRemove != null && gamepad.buttons[servo.buttonRemove] != null) {
                     servo.move(-gamepad.buttons[servo.buttonRemove].value * servo.buttonSpeed * delta);
                 }
             }
@@ -155,7 +155,7 @@ class Model {
            if (!gamepad) {
                return;
            }
-           if (macro.button !== null && gamepad.buttons[macro.button] !== null) {
+           if (macro.button != null && gamepad.buttons[macro.button] != null) {
                if (gamepad.buttons[macro.button].pressed) {
                    macro.run();
                }
@@ -181,7 +181,7 @@ class Model {
     }
 
     sendPWMs() {
-        if (this.socket !== null) {
+        if (this.socket != null) {
             const data = {"servos": {}};
             this.servos.forEach(({address, pwm}) => data["servos"][address] = Math.round(pwm));
             this.socket.send(JSON.stringify(data));
