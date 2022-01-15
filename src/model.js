@@ -4,6 +4,7 @@ function clamp(val, min, max) {
 
 class Servo {
     address = 0;
+    servoName = `Servo ${this.address}`;
     _pwm = 127;
     endpoints = [0, 255];
     axisSpeed = 1;
@@ -30,6 +31,14 @@ class Servo {
 
     move(val) {
         this.pwm += val;
+    }
+
+    set name(newName){
+        if(newName.length == 0){
+            this.servoName = `Servo ${this.address}`;
+        }else {
+            this.servoName = newName;
+        }
     }
 
     set pwm(pwm) {

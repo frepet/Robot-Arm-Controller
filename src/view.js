@@ -52,8 +52,13 @@ class View {
         const headerDiv = document.createElement("div");
         headerDiv.className = "card-header";
         const header = document.createElement("h1");
-        header.textContent = `Servo ${servoDiv.servoAddress}`;
+        header.textContent = servo.servoName;
         headerDiv.appendChild(header);
+
+        const nameinputdiv = this._createTextInputRow("Name:",servo.servoName, (name) => { 
+            servo.name = name;
+            header.textContent = servo.servoName;
+        });
 
         const pwmUpdate = (input, value, {pwm}) => {
             input.value = pwm.toString();
@@ -72,7 +77,9 @@ class View {
             value.textContent = endpoints[1];
         }
         const maxDiv = this._createSliderRow("Max", 0, 255, servo.max, 1, (max) => servo.max = max, maxUpdate);
+
         servoDiv.appendChild(headerDiv);
+        servoDiv.appendChild(nameinputdiv);
         servoDiv.appendChild(pwmDiv);
         servoDiv.appendChild(minDiv);
         servoDiv.appendChild(maxDiv);
@@ -131,6 +138,28 @@ class View {
         div.appendChild(val);
         div.appendChild(input);
         div.update = (state) => update(input, val, state);
+        return div;
+    }
+
+    _createTextInputRow(name, servoName, callback) {
+        const div = document.createElement("div");
+        div.className = "sliderDiv row";
+        const label = document.createElement("label");
+        label.textContent = name;
+        const val = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "input";
+        input.placeholder = servoName;
+        input.size = 16;
+        input.maxLength = 16;
+        input.oninput = () => callback(input.value);
+        
+        val.textContent = input.value.toString();
+
+        div.appendChild(label);
+        div.appendChild(val);
+        div.appendChild(input);
+        //div.update = (state) => update(input, val, state);
         return div;
     }
 
