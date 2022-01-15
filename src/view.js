@@ -34,6 +34,10 @@ class View {
             sliders.push(div.appendChild(slider));
             document.getElementById("gamepad-axes").appendChild(div);
         }
+        
+        this.servoCards.forEach((servoCard) => {
+            servoCard.addGamepadController(gamepad);
+        });
     }
 
     addServoCard(servo, gamepad) {
@@ -41,10 +45,6 @@ class View {
     }
 
     _createServoCard(servo, gamepad) {
-        if (!gamepad) {
-            this.log("Activate controller first!");
-            throw new Error("Create servo card without controller");
-        }
         const servoDiv = document.createElement("div");
         servoDiv.className = "servo card";
         servoDiv.servoAddress = servo.address;
@@ -72,23 +72,19 @@ class View {
             value.textContent = endpoints[1];
         }
         const maxDiv = this._createSliderRow("Max", 0, 255, servo.max, 1, (max) => servo.max = max, maxUpdate);
-
-        const axisSpeedDiv = this._createInputRow("Axis speed", -5, 5, servo.axisSpeed, 0.1, (axisSpeed) => servo.axisSpeed = axisSpeed);
-        const buttonSpeedDiv = this._createInputRow("Button speed", -5, 5, servo.buttonSpeed, 0.1, (buttonSpeed) => servo.buttonSpeed = buttonSpeed);
-
         servoDiv.appendChild(headerDiv);
         servoDiv.appendChild(pwmDiv);
         servoDiv.appendChild(minDiv);
         servoDiv.appendChild(maxDiv);
 
-        servoDiv.appendChild(axisSpeedDiv);
-        servoDiv.appendChild(this._createDropdownRow("Axis", gamepad.axes, "Axis", parseInt(servo.axis), (axis) => {
-            servo.axis = axis
-        }));
 
-        servoDiv.appendChild(buttonSpeedDiv);
-        servoDiv.appendChild(this._createDropdownRow("Button +", gamepad.buttons, "Button", parseInt(servo.buttonAdd), (buttonAdd) => servo.buttonAdd = buttonAdd));
-        servoDiv.appendChild(this._createDropdownRow("Button -", gamepad.buttons, "Button", parseInt(servo.buttonRemove), (buttonRemove) => servo.buttonRemove = buttonRemove));
+        servoDiv.addGamepadController = (gamepad) => {
+            servoDiv.appendChild(this._addGamepadControllingPart(gamepad,servo));
+        };
+
+        if (gamepad) {
+            servoDiv.addGamepadController(gamepad);
+        }    
 
         servoDiv.update = (servo) => {
             pwmDiv.update(servo);
@@ -97,6 +93,23 @@ class View {
         };
 
         return document.getElementById("servos").appendChild(servoDiv);
+    }
+
+    _addGamepadControllingPart(gamepad, servo){
+        const gamepadcontrollerDiv = document.createElement("div");
+
+        const axisSpeedDiv = this._createInputRow("Axis speed", -5, 5, servo.axisSpeed, 0.1, (axisSpeed) => servo.axisSpeed = axisSpeed);
+        const buttonSpeedDiv = this._createInputRow("Button speed", -5, 5, servo.buttonSpeed, 0.1, (buttonSpeed) => servo.buttonSpeed = buttonSpeed);
+
+        gamepadcontrollerDiv.appendChild(axisSpeedDiv);
+        gamepadcontrollerDiv.appendChild(this._createDropdownRow("Axis", gamepad.axes, "Axis", parseInt(servo.axis), (axis) => {
+            servo.axis = axis
+        }));
+
+        gamepadcontrollerDiv.appendChild(buttonSpeedDiv);
+        gamepadcontrollerDiv.appendChild(this._createDropdownRow("Button +", gamepad.buttons, "Button", parseInt(servo.buttonAdd), (buttonAdd) => servo.buttonAdd = buttonAdd));
+        gamepadcontrollerDiv.appendChild(this._createDropdownRow("Button -", gamepad.buttons, "Button", parseInt(servo.buttonRemove), (buttonRemove) => servo.buttonRemove = buttonRemove));
+        return gamepadcontrollerDiv;
     }
 
     _createSliderRow(name, min, max, value, step, callback, update) {
