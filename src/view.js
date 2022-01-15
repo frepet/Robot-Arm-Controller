@@ -159,7 +159,6 @@ class View {
         div.appendChild(label);
         div.appendChild(val);
         div.appendChild(input);
-        //div.update = (state) => update(input, val, state);
         return div;
     }
 

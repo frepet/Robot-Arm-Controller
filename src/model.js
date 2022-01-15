@@ -2,8 +2,10 @@ function clamp(val, min, max) {
     return Math.min(Math.max(val, min), max);
 }
 
+let nextServoAddress = 0;
+
 class Servo {
-    address = 0;
+    address = nextServoAddress++;
     servoName = `Servo ${this.address}`;
     _pwm = 127;
     endpoints = [0, 255];
