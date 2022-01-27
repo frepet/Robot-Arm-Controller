@@ -254,7 +254,7 @@ class View {
         playButton.addEventListener("click", (_) => macro.run());
         header.appendChild(playButton);
 
-        macroCard.appendChild(this._createDropdownRow("Button:", gamepad.buttons, "Button", null, button => macro.button = button));
+        macroCard.appendChild(this._createDropdownRow("Button:", gamepad.buttons, "Button", macro.button, button => macro.button = button));
 
         const actions = document.createElement("div");
         actions.className = "actions";

@@ -91,7 +91,7 @@ class Macro {
     static fromJSON({name, actions, button}) {
         let macro = new Macro(name);
         macro.actions = actions;
-        macro.button = button;
+        macro.button = parseInt(button);
         return macro;
     }
 
