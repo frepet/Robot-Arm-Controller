@@ -237,7 +237,7 @@ class View {
         }
     }
 
-    addMacro(macro) {
+    addMacro(macro, gamepad) {
         const macroCard = document.createElement("div");
         macroCard.className = "card";
 

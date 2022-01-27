@@ -1,4 +1,4 @@
-let gamepad;
+let gamepadIndex;
 const buttons = [];
 const sliders = [];
 
@@ -14,12 +14,13 @@ window.addEventListener("gamepadconnected", ({gamepad}) => addGamepad(gamepad));
 document.getElementById("file-selector").addEventListener('change', load);
 window.requestAnimationFrame(updateStatus);
 
-function addGamepad(gamepad_) {
-    gamepad = gamepad_;
+function addGamepad(gamepad) {
+    gamepadIndex = gamepad.index;
     view.addGamepadCard(gamepad);
 }
 
 function updateStatus() {
+    const gamepad = navigator.getGamepads()[gamepadIndex];
     model.update(Date.now() - lastUpdate, gamepad);
     view.update(model.servos);
     lastUpdate = Date.now();
@@ -45,7 +46,7 @@ function addServo(savedData = null) {
     } else {
         servo = Servo.fromJSON(savedData);
     }
-    view.addServoCard(servo, gamepad);
+    view.addServoCard(servo, navigator.getGamepads()[gamepadIndex]);
     model.addServo(servo);
     nextServo++;
 }
@@ -112,5 +113,5 @@ function addMacro(savedData = null) {
         nextMacro++;
     }
     model.addMacro(macro);
-    view.addMacro(macro);
+    view.addMacro(macro, navigator.getGamepads()[gamepadIndex]);
 }
